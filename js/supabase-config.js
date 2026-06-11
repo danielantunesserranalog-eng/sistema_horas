@@ -27,7 +27,7 @@ const Database = {
         const { data, error } = await supabase
             .from('colaboradores')
             .select('*')
-            .order('id', { ascending: true });
+            .order('nome', { ascending: true }); // <-- ALTERADO AQUI PARA ORDENAR POR NOME (ALFABÉTICA)
         if (error) {
             console.error('Erro ao buscar colaboradores:', error);
             return [];
