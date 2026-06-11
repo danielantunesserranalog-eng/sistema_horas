@@ -71,11 +71,19 @@
 
             <div id="dashboard" class="tab-content active-tab">
                 <div class="resumo-rapido">
-                    <h2><i class="fas fa-chart-pie"></i> Resumo por Colaborador</h2>
+                    <h2><i class="fas fa-chart-pie"></i> Resumo Acumulado Devido</h2>
                     <div class="table-wrapper">
                         <table id="tabela-resumo">
                             <thead>
-                                <tr><th>Colaborador</th><th>Março</th><th>Abril</th><th>Maio</th><th>Total (h)</th><th>Ações</th></tr>
+                                <tr>
+                                    <th>Colaborador</th>
+                                    <th>Devido 50%</th>
+                                    <th>Devido 80%</th>
+                                    <th>Devido 100%</th>
+                                    <th>Ad. Noturno</th>
+                                    <th>Total (h)</th>
+                                    <th>Ações</th>
+                                </tr>
                             </thead>
                             <tbody id="resumo-corpo"></tbody>
                         </table>
@@ -181,30 +189,30 @@
 
                 <div class="card tabelas-container">
                     <div id="marco" class="tabela-mes active-mes">
-                        <h3><i class="fas fa-calendar-alt"></i> Março - Detalhamento</h3>
+                        <h3><i class="fas fa-calendar-alt"></i> Março - Valores que FALTAM PAGAR</h3>
                         <div class="table-wrapper">
                             <table>
                                 <thead>
-                                    <tr><th>Nome</th><th>Cargo</th><th>50%</th><th>80%</th><th>100%</th><th>Ad. Noturno</th><th>Falta Pagar</th></tr>
+                                    <tr><th>Nome</th><th>Cargo</th><th>Devido 50%</th><th>Devido 80%</th><th>Devido 100%</th><th>Devido Noturno</th><th>Total Mês</th></tr>
                                 </thead>
                                 <tbody id="tabela-marco"></tbody>
                             </table>
                         </div>
                     </div>
                     <div id="abril" class="tabela-mes">
-                        <h3><i class="fas fa-calendar-alt"></i> Abril - Detalhamento</h3>
+                        <h3><i class="fas fa-calendar-alt"></i> Abril - Valores que FALTAM PAGAR</h3>
                         <div class="table-wrapper">
                             <table>
-                                <thead><tr><th>Nome</th><th>Cargo</th><th>50%</th><th>80%</th><th>100%</th><th>Ad. Noturno</th><th>Falta Pagar</th></tr></thead>
+                                <thead><tr><th>Nome</th><th>Cargo</th><th>Devido 50%</th><th>Devido 80%</th><th>Devido 100%</th><th>Devido Noturno</th><th>Total Mês</th></tr></thead>
                                 <tbody id="tabela-abril"></tbody>
                             </table>
                         </div>
                     </div>
                     <div id="maio" class="tabela-mes">
-                        <h3><i class="fas fa-calendar-alt"></i> Maio - Detalhamento</h3>
+                        <h3><i class="fas fa-calendar-alt"></i> Maio - Valores que FALTAM PAGAR</h3>
                         <div class="table-wrapper">
                             <table>
-                                <thead><tr><th>Nome</th><th>Cargo</th><th>50%</th><th>80%</th><th>100%</th><th>Ad. Noturno</th><th>Falta Pagar</th></tr></thead>
+                                <thead><tr><th>Nome</th><th>Cargo</th><th>Devido 50%</th><th>Devido 80%</th><th>Devido 100%</th><th>Devido Noturno</th><th>Total Mês</th></tr></thead>
                                 <tbody id="tabela-maio"></tbody>
                             </table>
                         </div>
@@ -229,16 +237,6 @@
                                 <option value="marco">Março</option>
                                 <option value="abril">Abril</option>
                                 <option value="maio">Maio</option>
-                            </select>
-                        </div>
-                        <div class="filtro-group">
-                            <label><i class="fas fa-chart-line"></i> Tipo de Hora</label>
-                            <select id="filtroTipo">
-                                <option value="todas">Todas as horas</option>
-                                <option value="50">Horas 50%</option>
-                                <option value="80">Horas 80%</option>
-                                <option value="100">Horas 100%</option>
-                                <option value="noturno">Adicional Noturno</option>
                             </select>
                         </div>
                     </div>
@@ -275,11 +273,11 @@
                 </div>
 
                 <div class="card">
-                    <h2><i class="fas fa-eye"></i> Prévia do Relatório</h2>
+                    <h2><i class="fas fa-eye"></i> Prévia do Relatório (Separado por Categoria)</h2>
                     <div class="relatorio-preview" id="relatorioPreview">
                         <div class="preview-header">
                             <i class="fas fa-chart-line"></i>
-                            <h3>Relatório de Horas Extras</h3>
+                            <h3>Relatório de Horas a Pagar</h3>
                             <span id="previewData"></span>
                         </div>
                         <div class="previa-tabela" id="previaTabela"></div>

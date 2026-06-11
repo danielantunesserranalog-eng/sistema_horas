@@ -105,25 +105,26 @@ const Database = {
         
         const resumo = colaboradores.map(colab => {
             const lancColab = lancamentos.filter(l => l.colaborador_id === colab.id);
-            let marco = 0, abril = 0, maio = 0;
+            
+            let totalGeral = { h50: 0, h80: 0, h100: 0, noturno: 0, total: 0 };
             
             lancColab.forEach(lanc => {
-                const falta50 = (lanc.h50 || 0) - (lanc.pago50 || 0);
-                const falta80 = (lanc.h80 || 0) - (lanc.pago80 || 0);
-                const falta100 = (lanc.h100 || 0) - (lanc.pago100 || 0);
-                const faltaNoturno = (lanc.adicional_noturno || 0) - (lanc.pago_noturno || 0);
-                const totalFalta = Math.max(0, falta50) + Math.max(0, falta80) + 
-                                   Math.max(0, falta100) + Math.max(0, faltaNoturno);
+                const falta50 = Math.max(0, (lanc.h50 || 0) - (lanc.pago50 || 0));
+                const falta80 = Math.max(0, (lanc.h80 || 0) - (lanc.pago80 || 0));
+                const falta100 = Math.max(0, (lanc.h100 || 0) - (lanc.pago100 || 0));
+                const faltaNoturno = Math.max(0, (lanc.adicional_noturno || 0) - (lanc.pago_noturno || 0));
+                const totalFalta = falta50 + falta80 + falta100 + faltaNoturno;
                 
-                if (lanc.mes === 'marco') marco = totalFalta;
-                else if (lanc.mes === 'abril') abril = totalFalta;
-                else if (lanc.mes === 'maio') maio = totalFalta;
+                totalGeral.h50 += falta50;
+                totalGeral.h80 += falta80;
+                totalGeral.h100 += falta100;
+                totalGeral.noturno += faltaNoturno;
+                totalGeral.total += totalFalta;
             });
             
             return {
                 colaborador: colab,
-                marco, abril, maio,
-                total: marco + abril + maio
+                totalGeral: totalGeral
             };
         });
         
