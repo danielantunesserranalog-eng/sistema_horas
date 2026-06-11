@@ -3,7 +3,7 @@ let dadosRelatorio = [];
 let lancamentosGlobais = []; 
 
 // =========================================================================
-// FUNÇÕES DE FORMATAR HORA
+// FUNÇÕES DE FORMATAR HORA E MANIPULAR INPUTS
 // =========================================================================
 function formatarHora(decimal) {
     if (!decimal || isNaN(decimal) || decimal <= 0) return "00:00";
@@ -104,9 +104,7 @@ async function obterDadosRelatorio(todosLancamentos = null) {
     return dados;
 }
 
-// =========================================================================
-// NOVO: Agrupa e soma os dados de todos os meses por Colaborador
-// =========================================================================
+// Agrupa e soma os dados de todos os meses por Colaborador
 function agruparDadosRelatorio(dados) {
     const resumoMap = {};
     dados.forEach(row => {
@@ -133,8 +131,8 @@ function agruparDadosRelatorio(dados) {
 
 // Atualizar prévia do relatório (Agrupado / Somado)
 async function atualizarPrevia(todosLancamentos = null) {
-    dadosRelatorio = await obterDadosRelatorio(todosLancamentos); // Pega todos os meses
-    const dadosAgrupados = agruparDadosRelatorio(dadosRelatorio); // Soma tudo por colaborador
+    dadosRelatorio = await obterDadosRelatorio(todosLancamentos);
+    const dadosAgrupados = agruparDadosRelatorio(dadosRelatorio);
     
     const previewDiv = document.getElementById("previaTabela");
     const dataSpan = document.getElementById("previewData");
@@ -305,7 +303,7 @@ async function gerarExcel() {
     }
 }
 
-// Gerar CSV (Exporta apenas o Resumo, pois CSV não suporta múltiplas abas)
+// Gerar CSV (Exporta apenas o Resumo)
 async function gerarCSV() {
     const btn = document.getElementById("btnExportCSV");
     btn.classList.add("loading");
@@ -488,6 +486,7 @@ function initMascaras() {
     });
 }
 
+// Apaga os dados dos inputs da tela
 function limparFormulario() {
     const meses = ['marco', 'abril', 'maio'];
     const campos = ["h50", "h80", "h100", "noturno", "pago50", "pago80", "pago100", "pagoNoturno"];
@@ -604,7 +603,12 @@ async function lancarHoras() {
 
     if (sucesso) {
         await carregarDadosIniciais(); 
-        preencherFormulario(colaboradorId); 
+        
+        // AQUI ESTÁ A MÁGICA DE APAGAR AS HORAS DA TELA APÓS SALVAR
+        limparFormulario(); // Limpa as caixinhas de input
+        const colabSelect = document.getElementById("colaboradorSelect");
+        if(colabSelect) colabSelect.value = ""; // Reseta a caixa "Selecione um colaborador"
+        
         alert("✅ Lançamentos salvos com sucesso em todos os meses!");
     } else {
         alert("❌ Ocorreu um erro ao salvar algumas horas. Tente novamente.");
