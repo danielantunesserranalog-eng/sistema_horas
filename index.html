@@ -14,7 +14,6 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- Sidebar Moderna -->
         <aside class="sidebar">
             <div class="logo">
                 <i class="fas fa-moon"></i>
@@ -46,9 +45,7 @@
             </div>
         </aside>
 
-        <!-- Conteúdo Principal -->
         <main class="main-content">
-            <!-- Header -->
             <header class="top-bar">
                 <div class="page-title">
                     <h1 id="pageTitle">Dashboard</h1>
@@ -72,7 +69,6 @@
                 </div>
             </header>
 
-            <!-- Aba Dashboard -->
             <div id="dashboard" class="tab-content active-tab">
                 <div class="resumo-rapido">
                     <h2><i class="fas fa-chart-pie"></i> Resumo por Colaborador</h2>
@@ -87,7 +83,6 @@
                 </div>
             </div>
 
-            <!-- Aba Cadastro -->
             <div id="cadastro" class="tab-content">
                 <div class="card">
                     <h2><i class="fas fa-user-plus"></i> Novo Colaborador</h2>
@@ -112,7 +107,6 @@
                 </div>
             </div>
 
-            <!-- Aba Lançamento -->
             <div id="lancamento" class="tab-content">
                 <div class="card">
                     <h2><i class="fas fa-calendar-alt"></i> Lançamento de Horas</h2>
@@ -142,19 +136,19 @@
                                 <h3><i class="fas fa-plus-circle"></i> Horas Extras</h3>
                                 <div class="input-group">
                                     <span class="badge">50%</span>
-                                    <input type="number" id="h50" placeholder="Horas" step="0.5">
+                                    <input type="text" id="h50" placeholder="00:00">
                                 </div>
                                 <div class="input-group">
                                     <span class="badge">80%</span>
-                                    <input type="number" id="h80" placeholder="Horas" step="0.5">
+                                    <input type="text" id="h80" placeholder="00:00">
                                 </div>
                                 <div class="input-group">
                                     <span class="badge">100%</span>
-                                    <input type="number" id="h100" placeholder="Horas" step="0.5">
+                                    <input type="text" id="h100" placeholder="00:00">
                                 </div>
                                 <div class="input-group">
                                     <span class="badge">🌙</span>
-                                    <input type="number" id="adicionalNoturno" placeholder="Adicional Noturno" step="0.5">
+                                    <input type="text" id="adicionalNoturno" placeholder="00:00">
                                 </div>
                             </div>
 
@@ -162,19 +156,19 @@
                                 <h3><i class="fas fa-check-circle"></i> Já Pago pela Empresa</h3>
                                 <div class="input-group">
                                     <span class="badge">50%</span>
-                                    <input type="number" id="pago50" placeholder="Horas pagas" step="0.5">
+                                    <input type="text" id="pago50" placeholder="00:00">
                                 </div>
                                 <div class="input-group">
                                     <span class="badge">80%</span>
-                                    <input type="number" id="pago80" placeholder="Horas pagas" step="0.5">
+                                    <input type="text" id="pago80" placeholder="00:00">
                                 </div>
                                 <div class="input-group">
                                     <span class="badge">100%</span>
-                                    <input type="number" id="pago100" placeholder="Horas pagas" step="0.5">
+                                    <input type="text" id="pago100" placeholder="00:00">
                                 </div>
                                 <div class="input-group">
                                     <span class="badge">🌙</span>
-                                    <input type="number" id="pagoNoturno" placeholder="Ad. Noturno pago" step="0.5">
+                                    <input type="text" id="pagoNoturno" placeholder="00:00">
                                 </div>
                             </div>
                         </div>
@@ -185,7 +179,6 @@
                     </div>
                 </div>
 
-                <!-- Tabelas por Mês -->
                 <div class="card tabelas-container">
                     <div id="marco" class="tabela-mes active-mes">
                         <h3><i class="fas fa-calendar-alt"></i> Março - Detalhamento</h3>
@@ -219,9 +212,7 @@
                 </div>
             </div>
 
-            <!-- Aba Relatórios - Versão Modernizada -->
             <div id="relatorios" class="tab-content">
-                <!-- Seção de Filtros -->
                 <div class="card">
                     <h2><i class="fas fa-filter"></i> Filtros Personalizados</h2>
                     <div class="filtros-container">
@@ -253,7 +244,6 @@
                     </div>
                 </div>
 
-                <!-- Botões de Exportação Modernos -->
                 <div class="card">
                     <h2><i class="fas fa-download"></i> Exportar Relatórios</h2>
                     <div class="export-buttons">
@@ -284,7 +274,6 @@
                     </div>
                 </div>
 
-                <!-- Prévia do Relatório -->
                 <div class="card">
                     <h2><i class="fas fa-eye"></i> Prévia do Relatório</h2>
                     <div class="relatorio-preview" id="relatorioPreview">

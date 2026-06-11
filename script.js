@@ -7,7 +7,7 @@ async function carregarDadosIniciais() {
     await carregarColaboradores();
     await carregarTabelas();
     await carregarResumo();
-    await gerarRelatorio();
+    // await gerarRelatorio(); <- Removido para corrigir o erro "Cannot set properties of null"
     await carregarFiltros();
     await atualizarPrevia();
     atualizarStats();
@@ -445,7 +445,10 @@ async function gerarRelatorio() {
     relatorio += `📅 Gerado em: ${new Date().toLocaleString()}\n`;
     relatorio += "═══════════════════════════════════════════════════\n";
     
-    document.getElementById("relatorioConteudo").innerHTML = `<pre>${relatorio}</pre>`;
+    const relatorioElement = document.getElementById("relatorioConteudo");
+    if (relatorioElement) {
+        relatorioElement.innerHTML = `<pre>${relatorio}</pre>`;
+    }
 }
 
 // Excluir colaborador
@@ -461,6 +464,22 @@ window.excluirColaborador = async function(id) {
     }
 };
 
+// Função para converter formato HH:MM (ex: 01:30) para decimal (ex: 1.5)
+function converterTempoParaDecimal(tempoString) {
+    if (!tempoString) return 0;
+    
+    // Se o usuário digitou com dois pontos (ex: "01:30")
+    if (tempoString.includes(':')) {
+        const partes = tempoString.split(':');
+        const horas = parseInt(partes[0], 10) || 0;
+        const minutos = parseInt(partes[1], 10) || 0;
+        return horas + (minutos / 60);
+    }
+    
+    // Se o usuário digitou um número normal com vírgula ou ponto (ex: "1.5" ou "1,5")
+    return parseFloat(tempoString.replace(',', '.')) || 0;
+}
+
 // Lançar horas
 async function lancarHoras() {
     const colaboradorId = document.getElementById("colaboradorSelect").value;
@@ -474,14 +493,14 @@ async function lancarHoras() {
     const lancamento = {
         colaborador_id: parseInt(colaboradorId),
         mes: mesAtivo,
-        h50: parseFloat(document.getElementById("h50").value) || 0,
-        h80: parseFloat(document.getElementById("h80").value) || 0,
-        h100: parseFloat(document.getElementById("h100").value) || 0,
-        adicional_noturno: parseFloat(document.getElementById("adicionalNoturno").value) || 0,
-        pago50: parseFloat(document.getElementById("pago50").value) || 0,
-        pago80: parseFloat(document.getElementById("pago80").value) || 0,
-        pago100: parseFloat(document.getElementById("pago100").value) || 0,
-        pago_noturno: parseFloat(document.getElementById("pagoNoturno").value) || 0
+        h50: converterTempoParaDecimal(document.getElementById("h50").value),
+        h80: converterTempoParaDecimal(document.getElementById("h80").value),
+        h100: converterTempoParaDecimal(document.getElementById("h100").value),
+        adicional_noturno: converterTempoParaDecimal(document.getElementById("adicionalNoturno").value),
+        pago50: converterTempoParaDecimal(document.getElementById("pago50").value),
+        pago80: converterTempoParaDecimal(document.getElementById("pago80").value),
+        pago100: converterTempoParaDecimal(document.getElementById("pago100").value),
+        pago_noturno: converterTempoParaDecimal(document.getElementById("pagoNoturno").value)
     };
     
     const result = await Database.upsertLancamento(lancamento);
@@ -595,6 +614,13 @@ async function init() {
     await carregarDadosIniciais();
     await verificarConexao();
     
+    // Eventos dos botões
+    const btnLancar = document.getElementById("btnLancar");
+    if (btnLancar) btnLancar.addEventListener("click", lancarHoras);
+
+    const btnCadastrar = document.getElementById("btnCadastrar");
+    if (btnCadastrar) btnCadastrar.addEventListener("click", cadastrarColaborador);
+
     // Eventos dos botões de exportação
     document.getElementById("btnExportPDF").addEventListener("click", gerarPDF);
     document.getElementById("btnExportExcel").addEventListener("click", gerarExcel);
