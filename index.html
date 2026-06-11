@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌙 HorasPro - Gestão de Horas Extras</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Moderna -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-moon"></i>
+                <span>HorasPro</span>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-tab="dashboard">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="cadastro">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Colaboradores</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="lancamento">
+                    <i class="fas fa-calculator"></i>
+                    <span>Lançar Horas</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="relatorios">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Relatórios</span>
+                </a>
+            </nav>
+
+            <div class="status-db">
+                <i class="fas fa-database"></i>
+                <span id="dbStatus">Conectando...</span>
+            </div>
+        </aside>
+
+        <!-- Conteúdo Principal -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-bar">
+                <div class="page-title">
+                    <h1 id="pageTitle">Dashboard</h1>
+                    <p id="pageSubtitle">Visão geral do sistema</p>
+                </div>
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <i class="fas fa-users"></i>
+                        <div>
+                            <h3 id="totalColaboradores">0</h3>
+                            <span>Colaboradores</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-hourglass-half"></i>
+                        <div>
+                            <h3 id="totalHorasDevidas">0</h3>
+                            <span>Horas a Pagar</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Aba Dashboard -->
+            <div id="dashboard" class="tab-content active-tab">
+                <div class="resumo-rapido">
+                    <h2><i class="fas fa-chart-pie"></i> Resumo por Colaborador</h2>
+                    <div class="table-wrapper">
+                        <table id="tabela-resumo">
+                            <thead>
+                                <tr><th>Colaborador</th><th>Março</th><th>Abril</th><th>Maio</th><th>Total (h)</th><th>Ações</th></tr>
+                            </thead>
+                            <tbody id="resumo-corpo"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aba Cadastro -->
+            <div id="cadastro" class="tab-content">
+                <div class="card">
+                    <h2><i class="fas fa-user-plus"></i> Novo Colaborador</h2>
+                    <div class="form-moderno">
+                        <div class="input-group">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="nome" placeholder="Nome completo">
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-briefcase"></i>
+                            <input type="text" id="cargo" placeholder="Cargo">
+                        </div>
+                        <button id="btnCadastrar" class="btn-primary">
+                            <i class="fas fa-save"></i> Cadastrar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2><i class="fas fa-list"></i> Colaboradores Ativos</h2>
+                    <div class="lista-colaboradores" id="listaNomes"></div>
+                </div>
+            </div>
+
+            <!-- Aba Lançamento -->
+            <div id="lancamento" class="tab-content">
+                <div class="card">
+                    <h2><i class="fas fa-calendar-alt"></i> Lançamento de Horas</h2>
+                    
+                    <div class="meses-selector">
+                        <button class="mes-btn active" data-mes="marco">
+                            <i class="fas fa-calendar"></i> Março
+                        </button>
+                        <button class="mes-btn" data-mes="abril">
+                            <i class="fas fa-calendar"></i> Abril
+                        </button>
+                        <button class="mes-btn" data-mes="maio">
+                            <i class="fas fa-calendar"></i> Maio
+                        </button>
+                    </div>
+
+                    <div class="form-lancamento">
+                        <div class="input-group">
+                            <i class="fas fa-user-circle"></i>
+                            <select id="colaboradorSelect">
+                                <option value="">Selecione um colaborador</option>
+                            </select>
+                        </div>
+
+                        <div class="grid-2-col">
+                            <div class="sub-card">
+                                <h3><i class="fas fa-plus-circle"></i> Horas Extras</h3>
+                                <div class="input-group">
+                                    <span class="badge">50%</span>
+                                    <input type="number" id="h50" placeholder="Horas" step="0.5">
+                                </div>
+                                <div class="input-group">
+                                    <span class="badge">80%</span>
+                                    <input type="number" id="h80" placeholder="Horas" step="0.5">
+                                </div>
+                                <div class="input-group">
+                                    <span class="badge">100%</span>
+                                    <input type="number" id="h100" placeholder="Horas" step="0.5">
+                                </div>
+                                <div class="input-group">
+                                    <span class="badge">🌙</span>
+                                    <input type="number" id="adicionalNoturno" placeholder="Adicional Noturno" step="0.5">
+                                </div>
+                            </div>
+
+                            <div class="sub-card">
+                                <h3><i class="fas fa-check-circle"></i> Já Pago pela Empresa</h3>
+                                <div class="input-group">
+                                    <span class="badge">50%</span>
+                                    <input type="number" id="pago50" placeholder="Horas pagas" step="0.5">
+                                </div>
+                                <div class="input-group">
+                                    <span class="badge">80%</span>
+                                    <input type="number" id="pago80" placeholder="Horas pagas" step="0.5">
+                                </div>
+                                <div class="input-group">
+                                    <span class="badge">100%</span>
+                                    <input type="number" id="pago100" placeholder="Horas pagas" step="0.5">
+                                </div>
+                                <div class="input-group">
+                                    <span class="badge">🌙</span>
+                                    <input type="number" id="pagoNoturno" placeholder="Ad. Noturno pago" step="0.5">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button id="btnLancar" class="btn-primary btn-large">
+                            <i class="fas fa-cloud-upload-alt"></i> Lançar Horas
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabelas por Mês -->
+                <div class="card tabelas-container">
+                    <div id="marco" class="tabela-mes active-mes">
+                        <h3><i class="fas fa-calendar-alt"></i> Março - Detalhamento</h3>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr><th>Nome</th><th>Cargo</th><th>50%</th><th>80%</th><th>100%</th><th>Ad. Noturno</th><th>Falta Pagar</th></tr>
+                                </thead>
+                                <tbody id="tabela-marco"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="abril" class="tabela-mes">
+                        <h3><i class="fas fa-calendar-alt"></i> Abril - Detalhamento</h3>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead><tr><th>Nome</th><th>Cargo</th><th>50%</th><th>80%</th><th>100%</th><th>Ad. Noturno</th><th>Falta Pagar</th></tr></thead>
+                                <tbody id="tabela-abril"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="maio" class="tabela-mes">
+                        <h3><i class="fas fa-calendar-alt"></i> Maio - Detalhamento</h3>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead><tr><th>Nome</th><th>Cargo</th><th>50%</th><th>80%</th><th>100%</th><th>Ad. Noturno</th><th>Falta Pagar</th></tr></thead>
+                                <tbody id="tabela-maio"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aba Relatórios - Versão Modernizada -->
+            <div id="relatorios" class="tab-content">
+                <!-- Seção de Filtros -->
+                <div class="card">
+                    <h2><i class="fas fa-filter"></i> Filtros Personalizados</h2>
+                    <div class="filtros-container">
+                        <div class="filtro-group">
+                            <label><i class="fas fa-user"></i> Colaborador</label>
+                            <select id="filtroColaborador">
+                                <option value="todos">Todos os colaboradores</option>
+                            </select>
+                        </div>
+                        <div class="filtro-group">
+                            <label><i class="fas fa-calendar"></i> Período</label>
+                            <select id="filtroPeriodo">
+                                <option value="todos">Todos os meses</option>
+                                <option value="marco">Março</option>
+                                <option value="abril">Abril</option>
+                                <option value="maio">Maio</option>
+                            </select>
+                        </div>
+                        <div class="filtro-group">
+                            <label><i class="fas fa-chart-line"></i> Tipo de Hora</label>
+                            <select id="filtroTipo">
+                                <option value="todas">Todas as horas</option>
+                                <option value="50">Horas 50%</option>
+                                <option value="80">Horas 80%</option>
+                                <option value="100">Horas 100%</option>
+                                <option value="noturno">Adicional Noturno</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botões de Exportação Modernos -->
+                <div class="card">
+                    <h2><i class="fas fa-download"></i> Exportar Relatórios</h2>
+                    <div class="export-buttons">
+                        <button id="btnExportPDF" class="btn-export pdf">
+                            <i class="fas fa-file-pdf"></i>
+                            <div class="btn-content">
+                                <strong>PDF</strong>
+                                <span>Documento profissional</span>
+                            </div>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                        <button id="btnExportExcel" class="btn-export excel">
+                            <i class="fas fa-file-excel"></i>
+                            <div class="btn-content">
+                                <strong>Excel</strong>
+                                <span>Planilha editável</span>
+                            </div>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                        <button id="btnExportCSV" class="btn-export csv">
+                            <i class="fas fa-file-csv"></i>
+                            <div class="btn-content">
+                                <strong>CSV</strong>
+                                <span>Dados brutos</span>
+                            </div>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Prévia do Relatório -->
+                <div class="card">
+                    <h2><i class="fas fa-eye"></i> Prévia do Relatório</h2>
+                    <div class="relatorio-preview" id="relatorioPreview">
+                        <div class="preview-header">
+                            <i class="fas fa-chart-line"></i>
+                            <h3>Relatório de Horas Extras</h3>
+                            <span id="previewData"></span>
+                        </div>
+                        <div class="previa-tabela" id="previaTabela"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="supabase-config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
