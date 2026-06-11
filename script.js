@@ -3,8 +3,20 @@ let dadosRelatorio = [];
 let lancamentosGlobais = []; 
 
 // =========================================================================
-// FUNÇÕES DE FORMATAR HORA
+// FUNÇÕES AUXILIARES DE SEGURANÇA E FORMATAÇÃO
 // =========================================================================
+// Pega o valor do input de forma segura sem travar o sistema
+function getValSeguro(id) {
+    const el = document.getElementById(id);
+    return el ? el.value : "";
+}
+
+// Seta o valor no input de forma segura
+function setValSeguro(id, valor) {
+    const el = document.getElementById(id);
+    if (el) el.value = valor;
+}
+
 function formatarHora(decimal) {
     if (!decimal || isNaN(decimal) || decimal <= 0) return "00:00";
     decimal = Math.max(0, decimal);
@@ -388,25 +400,18 @@ window.excluirColaborador = async function(id) {
 };
 
 // =========================================================================
-// MÁSCARA INTELIGENTE - SEM TRAVAR OS MINUTOS AO DIGITAR
+// MÁSCARA E FORMULÁRIO (AGORA PERMITE ATÉ 999:59)
 // =========================================================================
 function aplicarMascaraHora(evento) {
     let input = evento.target;
-    
-    // Deixa apagar livremente sem recriar a máscara atrapalhando o usuário
     if (evento.inputType === 'deleteContentBackward') return;
     
-    // Remove tudo que não é número
     let v = input.value.replace(/\D/g, "");
-    
-    // AUMENTADO PARA 5 DÍGITOS (Ex: 14530 para 145:30)
     if (v.length > 5) v = v.substring(0, 5);
     
     if (v.length >= 3) {
         let horas = v.substring(0, v.length - 2);
         let minutos = v.substring(v.length - 2);
-        
-        // Removi o bloqueio de "minutos = 59" para não quebrar a sua digitação rápida!
         input.value = horas + ":" + minutos;
     } else {
         input.value = v;
@@ -431,13 +436,12 @@ function limparFormulario() {
     
     meses.forEach(mes => {
         campos.forEach(campo => {
-            const el = document.getElementById(`${campo}_${mes}`);
-            if(el) el.value = "";
+            setValSeguro(`${campo}_${mes}`, "");
         });
     });
 }
 
-// Função que preenche os inputs com o que já tem salvo no banco
+// Preenche os inputs com o que já tem salvo no banco (Protegido contra travamentos)
 window.preencherFormulario = function(colaboradorId) {
     limparFormulario();
     if (!colaboradorId) return;
@@ -446,14 +450,14 @@ window.preencherFormulario = function(colaboradorId) {
     meses.forEach(mes => {
         const lanc = lancamentosGlobais.find(l => l.colaborador_id == colaboradorId && l.mes === mes);
         if (lanc) {
-            document.getElementById(`h50_${mes}`).value = formatarHoraInput(lanc.h50);
-            document.getElementById(`h80_${mes}`).value = formatarHoraInput(lanc.h80);
-            document.getElementById(`h100_${mes}`).value = formatarHoraInput(lanc.h100);
-            document.getElementById(`noturno_${mes}`).value = formatarHoraInput(lanc.adicional_noturno);
-            document.getElementById(`pago50_${mes}`).value = formatarHoraInput(lanc.pago50);
-            document.getElementById(`pago80_${mes}`).value = formatarHoraInput(lanc.pago80);
-            document.getElementById(`pago100_${mes}`).value = formatarHoraInput(lanc.pago100);
-            document.getElementById(`pagoNoturno_${mes}`).value = formatarHoraInput(lanc.pago_noturno);
+            setValSeguro(`h50_${mes}`, formatarHoraInput(lanc.h50));
+            setValSeguro(`h80_${mes}`, formatarHoraInput(lanc.h80));
+            setValSeguro(`h100_${mes}`, formatarHoraInput(lanc.h100));
+            setValSeguro(`noturno_${mes}`, formatarHoraInput(lanc.adicional_noturno));
+            setValSeguro(`pago50_${mes}`, formatarHoraInput(lanc.pago50));
+            setValSeguro(`pago80_${mes}`, formatarHoraInput(lanc.pago80));
+            setValSeguro(`pago100_${mes}`, formatarHoraInput(lanc.pago100));
+            setValSeguro(`pagoNoturno_${mes}`, formatarHoraInput(lanc.pago_noturno));
         }
     });
 };
@@ -469,7 +473,7 @@ function converterTempoParaDecimal(tempoString) {
     return parseFloat(tempoString.replace(',', '.')) || 0;
 }
 
-// Lançar horas - COM PROTEÇÃO DE MESES VAZIOS
+// Lançar horas - BLINDADO CONTRA ERROS
 async function lancarHoras() {
     const colaboradorId = document.getElementById("colaboradorSelect").value;
     if (!colaboradorId) {
@@ -479,48 +483,60 @@ async function lancarHoras() {
     
     const btnLancar = document.getElementById("btnLancar");
     const textoOriginal = btnLancar.innerHTML;
-    btnLancar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+    btnLancar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando os 3 meses...';
     btnLancar.disabled = true;
 
     const meses = ['marco', 'abril', 'maio'];
     let sucesso = true;
     let salvouAlgum = false;
 
-    for (const mes of meses) {
-        const h50 = converterTempoParaDecimal(document.getElementById(`h50_${mes}`).value);
-        const h80 = converterTempoParaDecimal(document.getElementById(`h80_${mes}`).value);
-        const h100 = converterTempoParaDecimal(document.getElementById(`h100_${mes}`).value);
-        const noturno = converterTempoParaDecimal(document.getElementById(`noturno_${mes}`).value);
-        const pago50 = converterTempoParaDecimal(document.getElementById(`pago50_${mes}`).value);
-        const pago80 = converterTempoParaDecimal(document.getElementById(`pago80_${mes}`).value);
-        const pago100 = converterTempoParaDecimal(document.getElementById(`pago100_${mes}`).value);
-        const pagoNoturno = converterTempoParaDecimal(document.getElementById(`pagoNoturno_${mes}`).value);
+    try {
+        for (const mes of meses) {
+            // Usa o getValSeguro para nunca quebrar o script se algo sumir da tela
+            const h50 = converterTempoParaDecimal(getValSeguro(`h50_${mes}`));
+            const h80 = converterTempoParaDecimal(getValSeguro(`h80_${mes}`));
+            const h100 = converterTempoParaDecimal(getValSeguro(`h100_${mes}`));
+            const noturno = converterTempoParaDecimal(getValSeguro(`noturno_${mes}`));
+            const pago50 = converterTempoParaDecimal(getValSeguro(`pago50_${mes}`));
+            const pago80 = converterTempoParaDecimal(getValSeguro(`pago80_${mes}`));
+            const pago100 = converterTempoParaDecimal(getValSeguro(`pago100_${mes}`));
+            const pagoNoturno = converterTempoParaDecimal(getValSeguro(`pagoNoturno_${mes}`));
 
-        const somaTotal = h50 + h80 + h100 + noturno + pago50 + pago80 + pago100 + pagoNoturno;
-        
-        const lancExistente = lancamentosGlobais.find(l => l.colaborador_id == colaboradorId && l.mes === mes);
-        
-        if (somaTotal === 0 && !lancExistente) {
-            continue; 
+            const somaTotal = h50 + h80 + h100 + noturno + pago50 + pago80 + pago100 + pagoNoturno;
+            
+            const lancExistente = lancamentosGlobais.find(l => l.colaborador_id == colaboradorId && l.mes === mes);
+            
+            // Ignora o mês se estiver totalmente vazio e não tiver nada para apagar no banco
+            if (somaTotal === 0 && !lancExistente) {
+                continue; 
+            }
+
+            const lancamento = {
+                colaborador_id: parseInt(colaboradorId),
+                mes: mes,
+                h50: h50,
+                h80: h80,
+                h100: h100,
+                adicional_noturno: noturno,
+                pago50: pago50,
+                pago80: pago80,
+                pago100: pago100,
+                pago_noturno: pagoNoturno
+            };
+            
+            // PROTEÇÃO EXTRA: Adiciona o ID existente para forçar o Update perfeito no Supabase
+            if (lancExistente && lancExistente.id) {
+                lancamento.id = lancExistente.id;
+            }
+            
+            const result = await Database.upsertLancamento(lancamento);
+            if (!result) sucesso = false;
+            
+            salvouAlgum = true;
         }
-
-        const lancamento = {
-            colaborador_id: parseInt(colaboradorId),
-            mes: mes,
-            h50: h50,
-            h80: h80,
-            h100: h100,
-            adicional_noturno: noturno,
-            pago50: pago50,
-            pago80: pago80,
-            pago100: pago100,
-            pago_noturno: pagoNoturno
-        };
-        
-        const result = await Database.upsertLancamento(lancamento);
-        if (!result) sucesso = false;
-        
-        salvouAlgum = true;
+    } catch (error) {
+        console.error("Erro interno ao processar meses:", error);
+        sucesso = false;
     }
     
     btnLancar.innerHTML = textoOriginal;
@@ -532,11 +548,11 @@ async function lancarHoras() {
     }
 
     if (sucesso) {
-        await carregarDadosIniciais(); 
-        preencherFormulario(colaboradorId); 
-        alert("✅ Lançamentos salvos com sucesso!");
+        await carregarDadosIniciais(); // Atualiza a memória central do sistema
+        preencherFormulario(colaboradorId); // Recarrega os inputs confirmando o visual na tela
+        alert("✅ Lançamentos salvos com sucesso em todos os meses!");
     } else {
-        alert("❌ Ocorreu um erro ao salvar algumas horas.");
+        alert("❌ Ocorreu um erro ao salvar algumas horas. Tente novamente.");
     }
 }
 
