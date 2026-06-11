@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌙 SerranaHoras - Dashboard</title>
-    <link rel="stylesheet" href="style.css">
+    <title>🌙 SerranaHoras - Horas a Mais</title>
+    <link rel="stylesheet" href="../style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -14,20 +14,18 @@
         <aside class="sidebar">
             <div class="logo"><i class="fas fa-moon"></i><span>SerranaHoras</span></div>
             <nav class="nav-menu">
-                <a href="index.html" class="nav-item active"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
-                <a href="views/cadastro.html" class="nav-item"><i class="fas fa-user-plus"></i><span>Colaboradores</span></a>
-                <a href="views/lancamento.html" class="nav-item"><i class="fas fa-calculator"></i><span>Lançar Horas</span></a>
-                <a href="views/relatorios.html" class="nav-item"><i class="fas fa-chart-bar"></i><span>Relatórios</span></a>
-                <a href="views/excedentes.html" class="nav-item"><i class="fas fa-coins"></i><span>Horas a Mais</span></a>
+                <a href="../index.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
+                <a href="cadastro.html" class="nav-item"><i class="fas fa-user-plus"></i><span>Colaboradores</span></a>
+                <a href="lancamento.html" class="nav-item"><i class="fas fa-calculator"></i><span>Lançar Horas</span></a>
+                <a href="relatorios.html" class="nav-item"><i class="fas fa-chart-bar"></i><span>Relatórios</span></a>
+                <a href="excedentes.html" class="nav-item active"><i class="fas fa-coins"></i><span>Horas a Mais</span></a>
             </nav>
             <div class="status-db"><i class="fas fa-database"></i><span id="dbStatus">Conectando...</span></div>
         </aside>
 
         <main class="main-content">
             <header class="top-bar">
-                <div class="page-title">
-                    <h1>Dashboard</h1><p>Visão geral do sistema</p>
-                </div>
+                <div class="page-title"><h1>Horas a Mais</h1><p>Controlo de horas pagas a mais</p></div>
                 <div class="stats-cards">
                     <div class="stat-card"><i class="fas fa-users"></i><div><h3 id="totalColaboradores">0</h3><span>Colaboradores</span></div></div>
                     <div class="stat-card"><i class="fas fa-hourglass-half"></i><div><h3 id="totalHorasDevidas">0</h3><span>Horas a Pagar</span></div></div>
@@ -35,26 +33,23 @@
             </header>
 
             <div class="tab-content active-tab">
-                <div class="resumo-rapido">
-                    <h2><i class="fas fa-chart-pie"></i> Resumo Acumulado Devido</h2>
+                <div class="card">
+                    <h2><i class="fas fa-hand-holding-usd"></i> Resumo de Horas Pagas a Mais</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Aqui visualiza o total de horas que foram pagas aos colaboradores além do que foi lançado.</p>
                     <div class="table-wrapper">
-                        <table id="tabela-resumo">
+                        <table>
                             <thead>
-                                <tr>
-                                    <th>Colaborador</th><th>Devido 50%</th><th>Devido 80%</th><th>Devido 100%</th>
-                                    <th>Ad. Noturno</th><th style="color: #ffffff;">Atrasos Indevidos</th><th>Total (h)</th><th>Ações</th>
-                                </tr>
+                                <tr><th>Colaborador</th><th>Excedente 50%</th><th>Excedente 80%</th><th>Excedente 100%</th><th>Excedente Noturno</th><th>Total Pago a Mais (h)</th></tr>
                             </thead>
-                            <tbody id="resumo-corpo"></tbody>
+                            <tbody id="excedentes-corpo"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
         </main>
     </div>
-
-    <script src="js/supabase-config.js"></script>
-    <script src="js/shared.js"></script>
-    <script src="js/dashboard.js"></script>
+    <script src="../js/supabase-config.js"></script>
+    <script src="../js/shared.js"></script>
+    <script src="../js/excedentes.js"></script>
 </body>
 </html>

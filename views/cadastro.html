@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌙 SerranaHoras - Colaboradores</title>
+    <link rel="stylesheet" href="../style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="logo"><i class="fas fa-moon"></i><span>SerranaHoras</span></div>
+            <nav class="nav-menu">
+                <a href="../index.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
+                <a href="cadastro.html" class="nav-item active"><i class="fas fa-user-plus"></i><span>Colaboradores</span></a>
+                <a href="lancamento.html" class="nav-item"><i class="fas fa-calculator"></i><span>Lançar Horas</span></a>
+                <a href="relatorios.html" class="nav-item"><i class="fas fa-chart-bar"></i><span>Relatórios</span></a>
+                <a href="excedentes.html" class="nav-item"><i class="fas fa-coins"></i><span>Horas a Mais</span></a>
+            </nav>
+            <div class="status-db"><i class="fas fa-database"></i><span id="dbStatus">Conectando...</span></div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="page-title">
+                    <h1>Colaboradores</h1><p>Gerenciamento de equipa</p>
+                </div>
+                <div class="stats-cards">
+                    <div class="stat-card"><i class="fas fa-users"></i><div><h3 id="totalColaboradores">0</h3><span>Colaboradores</span></div></div>
+                    <div class="stat-card"><i class="fas fa-hourglass-half"></i><div><h3 id="totalHorasDevidas">0</h3><span>Horas a Pagar</span></div></div>
+                </div>
+            </header>
+
+            <div class="tab-content active-tab">
+                <div class="card">
+                    <h2><i class="fas fa-user-plus"></i> Novo Colaborador</h2>
+                    <div class="form-moderno">
+                        <div class="input-group"><i class="fas fa-user"></i><input type="text" id="nome" placeholder="Nome completo"></div>
+                        <div class="input-group"><i class="fas fa-briefcase"></i><input type="text" id="cargo" placeholder="Cargo"></div>
+                        <button id="btnCadastrar" class="btn-primary"><i class="fas fa-save"></i> Cadastrar</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2><i class="fas fa-list"></i> Colaboradores Ativos</h2>
+                    <div class="lista-colaboradores" id="listaNomes"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="../js/supabase-config.js"></script>
+    <script src="../js/shared.js"></script>
+    <script src="../js/cadastro.js"></script>
+</body>
+</html>

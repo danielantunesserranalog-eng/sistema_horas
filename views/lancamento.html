@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌙 SerranaHoras - Lançamentos</title>
+    <link rel="stylesheet" href="../style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .grid-3-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 1.5rem; }
+        @media(max-width: 900px) { .grid-3-col { grid-template-columns: 1fr; } }
+        .mes-header { text-align: center; padding-bottom: 10px; border-bottom: 2px solid var(--border); margin-bottom: 15px; color: var(--primary); }
+        .secao-titulo { font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; font-weight: bold; letter-spacing: 1px; margin: 20px 0 10px 0; display: flex; align-items: center; gap: 5px; }
+        .secao-titulo i { color: var(--primary); }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="logo"><i class="fas fa-moon"></i><span>SerranaHoras</span></div>
+            <nav class="nav-menu">
+                <a href="../index.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
+                <a href="cadastro.html" class="nav-item"><i class="fas fa-user-plus"></i><span>Colaboradores</span></a>
+                <a href="lancamento.html" class="nav-item active"><i class="fas fa-calculator"></i><span>Lançar Horas</span></a>
+                <a href="relatorios.html" class="nav-item"><i class="fas fa-chart-bar"></i><span>Relatórios</span></a>
+                <a href="excedentes.html" class="nav-item"><i class="fas fa-coins"></i><span>Horas a Mais</span></a>
+            </nav>
+            <div class="status-db"><i class="fas fa-database"></i><span id="dbStatus">Conectando...</span></div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="page-title"><h1>Lançamento</h1><p>Registo de horas simultâneo</p></div>
+                <div class="stats-cards">
+                    <div class="stat-card"><i class="fas fa-users"></i><div><h3 id="totalColaboradores">0</h3><span>Colaboradores</span></div></div>
+                    <div class="stat-card"><i class="fas fa-hourglass-half"></i><div><h3 id="totalHorasDevidas">0</h3><span>Horas a Pagar</span></div></div>
+                </div>
+            </header>
+
+            <div class="tab-content active-tab">
+                <div class="card">
+                    <h2><i class="fas fa-calculator"></i> Lançamento Simultâneo</h2>
+                    <div class="form-lancamento">
+                        <div class="input-group">
+                            <i class="fas fa-user-circle"></i>
+                            <select id="colaboradorSelect"><option value="">Selecione um colaborador para carregar as horas</option></select>
+                        </div>
+                        <div class="grid-3-col">
+                            <div class="sub-card">
+                                <h3 class="mes-header"><i class="fas fa-calendar"></i> Março</h3>
+                                <div class="secao-titulo"><i class="fas fa-plus-circle"></i> Horas Extras</div>
+                                <div class="input-group"><span class="badge">50%</span><input type="text" id="h50_marco" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">80%</span><input type="text" id="h80_marco" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">100%</span><input type="text" id="h100_marco" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">🌙 Not.</span><input type="text" id="noturno_marco" placeholder="00:00"></div>
+                                <div class="secao-titulo"><i class="fas fa-check-circle"></i> Já Pago</div>
+                                <div class="input-group"><span class="badge">50%</span><input type="text" id="pago50_marco" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">80%</span><input type="text" id="pago80_marco" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">100%</span><input type="text" id="pago100_marco" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">🌙 Not.</span><input type="text" id="pagoNoturno_marco" placeholder="00:00"></div>
+                                <div class="secao-titulo" style="color: #ffffff;"><i class="fas fa-plus-circle" style="color: #ffffff;"></i> Reembolso</div>
+                                <div class="input-group"><span class="badge" style="background: #8b5cf6;">Atraso Indevido</span><input type="text" id="atrasos_marco" placeholder="00:00"></div>
+                            </div>
+                            <div class="sub-card">
+                                <h3 class="mes-header"><i class="fas fa-calendar"></i> Abril</h3>
+                                <div class="secao-titulo"><i class="fas fa-plus-circle"></i> Horas Extras</div>
+                                <div class="input-group"><span class="badge">50%</span><input type="text" id="h50_abril" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">80%</span><input type="text" id="h80_abril" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">100%</span><input type="text" id="h100_abril" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">🌙 Not.</span><input type="text" id="noturno_abril" placeholder="00:00"></div>
+                                <div class="secao-titulo"><i class="fas fa-check-circle"></i> Já Pago</div>
+                                <div class="input-group"><span class="badge">50%</span><input type="text" id="pago50_abril" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">80%</span><input type="text" id="pago80_abril" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">100%</span><input type="text" id="pago100_abril" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">🌙 Not.</span><input type="text" id="pagoNoturno_abril" placeholder="00:00"></div>
+                                <div class="secao-titulo" style="color: #ffffff;"><i class="fas fa-plus-circle" style="color: #ffffff;"></i> Reembolso</div>
+                                <div class="input-group"><span class="badge" style="background: #8b5cf6;">Atraso Indevido</span><input type="text" id="atrasos_abril" placeholder="00:00"></div>
+                            </div>
+                            <div class="sub-card">
+                                <h3 class="mes-header"><i class="fas fa-calendar"></i> Maio</h3>
+                                <div class="secao-titulo"><i class="fas fa-plus-circle"></i> Horas Extras</div>
+                                <div class="input-group"><span class="badge">50%</span><input type="text" id="h50_maio" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">80%</span><input type="text" id="h80_maio" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">100%</span><input type="text" id="h100_maio" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">🌙 Not.</span><input type="text" id="noturno_maio" placeholder="00:00"></div>
+                                <div class="secao-titulo"><i class="fas fa-check-circle"></i> Já Pago</div>
+                                <div class="input-group"><span class="badge">50%</span><input type="text" id="pago50_maio" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">80%</span><input type="text" id="pago80_maio" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">100%</span><input type="text" id="pago100_maio" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">🌙 Not.</span><input type="text" id="pagoNoturno_maio" placeholder="00:00"></div>
+                                <div class="secao-titulo" style="color: #ffffff;"><i class="fas fa-plus-circle" style="color: #ffffff;"></i> Reembolso</div>
+                                <div class="input-group"><span class="badge" style="background: #8b5cf6;">Atraso Indevido</span><input type="text" id="atrasos_maio" placeholder="00:00"></div>
+                            </div>
+                        </div>
+                        <button id="btnLancar" class="btn-primary btn-large" style="margin-top: 2rem; width: 100%;"><i class="fas fa-cloud-upload-alt"></i> Salvar Lançamentos dos 3 Meses</button>
+                    </div>
+                </div>
+
+                <div class="card tabelas-container">
+                    <div class="meses-selector" style="margin-bottom: 20px;">
+                        <button class="mes-btn active" data-mes="marco"><i class="fas fa-calendar"></i> Tabela Março</button>
+                        <button class="mes-btn" data-mes="abril"><i class="fas fa-calendar"></i> Tabela Abril</button>
+                        <button class="mes-btn" data-mes="maio"><i class="fas fa-calendar"></i> Tabela Maio</button>
+                    </div>
+                    <div id="marco" class="tabela-mes active-mes"><div class="table-wrapper"><table><thead><tr><th>Nome</th><th>Cargo</th><th>Devido 50%</th><th>Devido 80%</th><th>Devido 100%</th><th>Devido Noturno</th><th style="color:#ffffff;">Atrasos Indev.</th><th>Total Mês</th></tr></thead><tbody id="tabela-marco"></tbody></table></div></div>
+                    <div id="abril" class="tabela-mes"><div class="table-wrapper"><table><thead><tr><th>Nome</th><th>Cargo</th><th>Devido 50%</th><th>Devido 80%</th><th>Devido 100%</th><th>Devido Noturno</th><th style="color:#ffffff;">Atrasos Indev.</th><th>Total Mês</th></tr></thead><tbody id="tabela-abril"></tbody></table></div></div>
+                    <div id="maio" class="tabela-mes"><div class="table-wrapper"><table><thead><tr><th>Nome</th><th>Cargo</th><th>Devido 50%</th><th>Devido 80%</th><th>Devido 100%</th><th>Devido Noturno</th><th style="color:#ffffff;">Atrasos Indev.</th><th>Total Mês</th></tr></thead><tbody id="tabela-maio"></tbody></table></div></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="../js/supabase-config.js"></script>
+    <script src="../js/shared.js"></script>
+    <script src="../js/lancamento.js"></script>
+</body>
+</html>
