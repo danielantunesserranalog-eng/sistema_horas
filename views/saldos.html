@@ -29,7 +29,7 @@
 
         <main class="main-content">
             <header class="top-bar">
-                <div class="page-title"><h1>Saldos e Ajustes</h1><p>Resumo de valores a pagar e descontar</p></div>
+                <div class="page-title"><h1>Saldos e Ajustes</h1><p>Resumo detalhado de horas a pagar e descontar</p></div>
                 <div class="stats-cards">
                     <div class="stat-card"><i class="fas fa-users"></i><div><h3 id="totalColaboradores">0</h3><span>Colaboradores</span></div></div>
                     <div class="stat-card"><i class="fas fa-hourglass-half"></i><div><h3 id="totalHorasDevidas">0</h3><span>Horas a Pagar</span></div></div>
@@ -39,22 +39,33 @@
             <div class="tab-content active-tab">
                 <div class="card">
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
-                        <h2 style="margin: 0;"><i class="fas fa-balance-scale"></i> Demonstrativo de Saldos</h2>
+                        <h2 style="margin: 0;"><i class="fas fa-balance-scale"></i> Demonstrativo Detalhado de Saldos</h2>
                         <div style="display: flex; gap: 10px;">
                             <button id="btnExportPDF" class="btn-primary" style="background: #ef4444; border-radius: 8px;"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
                             <button id="btnExportExcel" class="btn-primary" style="background: #10b981; border-radius: 8px;"><i class="fas fa-file-excel"></i> Exportar Excel</button>
                         </div>
                     </div>
-                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Consolidado contendo as horas devidas (a pagar) e as horas pagas em excesso (a descontar) de cada colaborador.</p>
+                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Visualização analítica por tipo de hora devida (a pagar) e hora paga em excesso (a descontar) com o cálculo de acerto final.</p>
                     <div class="table-wrapper">
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Colaborador</th>
-                                    <th>Cargo</th>
-                                    <th style="color: #10b981;">Horas a Pagar (Devido)</th>
-                                    <th style="color: #ef4444;">Horas a Descontar (Excedente)</th>
-                                    <th>Conclusão / Saldo Atual</th>
+                                    <th rowspan="2" style="vertical-align: middle;">Colaborador</th>
+                                    <th rowspan="2" style="vertical-align: middle;">Cargo</th>
+                                    <th colspan="5" style="text-align: center; background: #10b981; color: white;">Horas a Pagar (Devido)</th>
+                                    <th colspan="4" style="text-align: center; background: #ef4444; color: white;">Horas a Descontar (Excedente)</th>
+                                    <th rowspan="2" style="vertical-align: middle;">Conclusão / Saldo Final</th>
+                                </tr>
+                                <tr>
+                                    <th style="background: #059669; color: white;">50%</th>
+                                    <th style="background: #059669; color: white;">80%</th>
+                                    <th style="background: #059669; color: white;">100%</th>
+                                    <th style="background: #059669; color: white;">Not.</th>
+                                    <th style="background: #059669; color: white;">Atrasos</th>
+                                    <th style="background: #dc2626; color: white;">50%</th>
+                                    <th style="background: #dc2626; color: white;">80%</th>
+                                    <th style="background: #dc2626; color: white;">100%</th>
+                                    <th style="background: #dc2626; color: white;">Not.</th>
                                 </tr>
                             </thead>
                             <tbody id="saldos-corpo"></tbody>
