@@ -99,7 +99,7 @@ const Database = {
         return data;
     },
 
-    // Usa cache para ser ultra rápido e adiciona os ATRASOS na conta
+    // Resumo Geral com Matemática de Soma para Atrasos Indevidos
     async getResumoGeral(colabsCache = null, lancCache = null) {
         const colaboradores = colabsCache || await Database.getColaboradores();
         const lancamentos = lancCache || await Database.getLancamentos();
@@ -116,8 +116,8 @@ const Database = {
                 const faltaNoturno = Math.max(0, (lanc.adicional_noturno || 0) - (lanc.pago_noturno || 0));
                 const atrasos = lanc.atrasos || 0;
                 
-                // O atraso é ABATIDO do total de horas que a empresa deve
-                const totalFalta = (falta50 + falta80 + falta100 + faltaNoturno) - atrasos;
+                // O atraso indevido é SOMADO ao total de horas que a empresa deve (reembolso)
+                const totalFalta = (falta50 + falta80 + falta100 + faltaNoturno) + atrasos;
                 
                 totalGeral.h50 += falta50;
                 totalGeral.h80 += falta80;
