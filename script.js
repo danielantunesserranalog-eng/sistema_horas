@@ -1,12 +1,31 @@
 let colaboradores = [];
 let dadosRelatorio = [];
-let lancamentosGlobais = []; // Memória central para acabar com a lentidão de telas
+let lancamentosGlobais = []; 
 
-// Carregar dados iniciais (Apenas 1 carregamento mega rápido)
+// =========================================================================
+// FUNÇÃO MÁGICA: Converte o decimal do banco (ex: 1.5) de volta para tela (ex: 01:30)
+// =========================================================================
+function formatarHora(decimal) {
+    if (!decimal || isNaN(decimal) || decimal <= 0) return "00:00";
+    
+    // Garante que não teremos números negativos
+    decimal = Math.max(0, decimal);
+    
+    const horas = Math.floor(decimal);
+    const minutos = Math.round((decimal - horas) * 60);
+    
+    // Se o arredondamento bater 60 minutos, adiciona 1 hora
+    if (minutos === 60) {
+        return `${String(horas + 1).padStart(2, '0')}:00`;
+    }
+    
+    return `${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')}`;
+}
+
+// Carregar dados iniciais
 async function carregarDadosIniciais() {
     await initSupabase();
     
-    // CARREGA TUDO DE UMA VEZ
     colaboradores = await Database.getColaboradores();
     lancamentosGlobais = await Database.getLancamentos();
     
@@ -30,7 +49,7 @@ function carregarFiltros() {
     });
 }
 
-// Obter dados do relatório com filtros usando a memória global
+// Obter dados do relatório
 async function obterDadosRelatorio(todosLancamentos = null) {
     const colaboradorId = document.getElementById("filtroColaborador").value;
     const periodo = document.getElementById("filtroPeriodo").value;
@@ -61,11 +80,11 @@ async function obterDadosRelatorio(todosLancamentos = null) {
                     colaborador: item.colaborador.nome,
                     cargo: item.colaborador.cargo,
                     mes: mes.charAt(0).toUpperCase() + mes.slice(1),
-                    h50: h50.toFixed(1),
-                    h80: h80.toFixed(1),
-                    h100: h100.toFixed(1),
-                    noturno: noturno.toFixed(1),
-                    total: total.toFixed(1)
+                    h50: h50,
+                    h80: h80,
+                    h100: h100,
+                    noturno: noturno,
+                    total: total
                 });
             }
         }
@@ -99,26 +118,26 @@ async function atualizarPrevia(todosLancamentos = null) {
         html += `<tr>
             <td>${row.colaborador}</td>
             <td>${row.mes}</td>
-            <td>${row.h50}</td>
-            <td>${row.h80}</td>
-            <td>${row.h100}</td>
-            <td>${row.noturno}</td>
-            <td><strong>${row.total}</strong></td>
+            <td>${formatarHora(row.h50)}</td>
+            <td>${formatarHora(row.h80)}</td>
+            <td>${formatarHora(row.h100)}</td>
+            <td>${formatarHora(row.noturno)}</td>
+            <td><strong>${formatarHora(row.total)}</strong></td>
         </tr>`;
-        tot50 += parseFloat(row.h50);
-        tot80 += parseFloat(row.h80);
-        tot100 += parseFloat(row.h100);
-        totNot += parseFloat(row.noturno);
-        totGeral += parseFloat(row.total);
+        tot50 += row.h50;
+        tot80 += row.h80;
+        tot100 += row.h100;
+        totNot += row.noturno;
+        totGeral += row.total;
     });
     
     html += `<tr style="background: var(--accent);">
         <td colspan="2"><strong>TOTAL GERAL</strong></td>
-        <td><strong>${tot50.toFixed(1)}h</strong></td>
-        <td><strong>${tot80.toFixed(1)}h</strong></td>
-        <td><strong>${tot100.toFixed(1)}h</strong></td>
-        <td><strong>${totNot.toFixed(1)}h</strong></td>
-        <td><strong>${totGeral.toFixed(1)}h</strong></td>
+        <td><strong>${formatarHora(tot50)}</strong></td>
+        <td><strong>${formatarHora(tot80)}</strong></td>
+        <td><strong>${formatarHora(tot100)}</strong></td>
+        <td><strong>${formatarHora(totNot)}</strong></td>
+        <td><strong>${formatarHora(totGeral)}</strong></td>
     </tr>`;
     
     html += '</tbody></table>';
@@ -151,23 +170,23 @@ async function gerarPDF() {
         const tableData = dadosRelatorio.map(row => [
             row.colaborador,
             row.mes,
-            `${row.h50} h`,
-            `${row.h80} h`,
-            `${row.h100} h`,
-            `${row.noturno} h`,
-            `${row.total} h`
+            formatarHora(row.h50),
+            formatarHora(row.h80),
+            formatarHora(row.h100),
+            formatarHora(row.noturno),
+            formatarHora(row.total)
         ]);
         
         let tot50 = 0, tot80 = 0, tot100 = 0, totNot = 0, totGeral = 0;
         dadosRelatorio.forEach(row => {
-            tot50 += parseFloat(row.h50);
-            tot80 += parseFloat(row.h80);
-            tot100 += parseFloat(row.h100);
-            totNot += parseFloat(row.noturno);
-            totGeral += parseFloat(row.total);
+            tot50 += row.h50;
+            tot80 += row.h80;
+            tot100 += row.h100;
+            totNot += row.noturno;
+            totGeral += row.total;
         });
         
-        tableData.push(['TOTAL GERAL', '-', `${tot50.toFixed(1)} h`, `${tot80.toFixed(1)} h`, `${tot100.toFixed(1)} h`, `${totNot.toFixed(1)} h`, `${totGeral.toFixed(1)} h`]);
+        tableData.push(['TOTAL GERAL', '-', formatarHora(tot50), formatarHora(tot80), formatarHora(tot100), formatarHora(totNot), formatarHora(totGeral)]);
         
         doc.autoTable({
             startY: 55,
@@ -211,23 +230,23 @@ async function gerarExcel() {
         const excelData = dadosRelatorio.map(row => ({
             'Colaborador': row.colaborador,
             'Mês': row.mes,
-            'Devido 50%': parseFloat(row.h50),
-            'Devido 80%': parseFloat(row.h80),
-            'Devido 100%': parseFloat(row.h100),
-            'Ad. Noturno': parseFloat(row.noturno),
-            'Total (h)': parseFloat(row.total)
+            'Devido 50%': formatarHora(row.h50),
+            'Devido 80%': formatarHora(row.h80),
+            'Devido 100%': formatarHora(row.h100),
+            'Ad. Noturno': formatarHora(row.noturno),
+            'Total (h)': formatarHora(row.total)
         }));
         
         let tot50 = 0, tot80 = 0, tot100 = 0, totNot = 0, totGeral = 0;
         dadosRelatorio.forEach(row => {
-            tot50 += parseFloat(row.h50); tot80 += parseFloat(row.h80);
-            tot100 += parseFloat(row.h100); totNot += parseFloat(row.noturno); totGeral += parseFloat(row.total);
+            tot50 += row.h50; tot80 += row.h80;
+            tot100 += row.h100; totNot += row.noturno; totGeral += row.total;
         });
         
         excelData.push({
             'Colaborador': 'TOTAL GERAL', 'Mês': '-',
-            'Devido 50%': tot50, 'Devido 80%': tot80,
-            'Devido 100%': tot100, 'Ad. Noturno': totNot, 'Total (h)': totGeral
+            'Devido 50%': formatarHora(tot50), 'Devido 80%': formatarHora(tot80),
+            'Devido 100%': formatarHora(tot100), 'Ad. Noturno': formatarHora(totNot), 'Total (h)': formatarHora(totGeral)
         });
         
         const ws = XLSX.utils.json_to_sheet(excelData);
@@ -259,16 +278,16 @@ async function gerarCSV() {
     try {
         const headers = ['Colaborador', 'Mês', 'Devido 50%', 'Devido 80%', 'Devido 100%', 'Ad. Noturno', 'Total (h)'];
         const rows = dadosRelatorio.map(row => [
-            row.colaborador, row.mes, row.h50, row.h80, row.h100, row.noturno, row.total
+            row.colaborador, row.mes, formatarHora(row.h50), formatarHora(row.h80), formatarHora(row.h100), formatarHora(row.noturno), formatarHora(row.total)
         ]);
         
         let tot50 = 0, tot80 = 0, tot100 = 0, totNot = 0, totGeral = 0;
         dadosRelatorio.forEach(row => {
-            tot50 += parseFloat(row.h50); tot80 += parseFloat(row.h80);
-            tot100 += parseFloat(row.h100); totNot += parseFloat(row.noturno); totGeral += parseFloat(row.total);
+            tot50 += row.h50; tot80 += row.h80;
+            tot100 += row.h100; totNot += row.noturno; totGeral += row.total;
         });
         
-        rows.push(['TOTAL GERAL', '-', tot50.toFixed(1), tot80.toFixed(1), tot100.toFixed(1), totNot.toFixed(1), totGeral.toFixed(1)]);
+        rows.push(['TOTAL GERAL', '-', formatarHora(tot50), formatarHora(tot80), formatarHora(tot100), formatarHora(totNot), formatarHora(totGeral)]);
         
         let csvContent = headers.join(',') + '\n';
         rows.forEach(row => {
@@ -332,7 +351,7 @@ function atualizarLista() {
     `).join("");
 }
 
-// Carregar tabelas por mês de forma Instantânea
+// Carregar tabelas por mês (Formatado)
 function carregarTabelas(todosLancamentos) {
     const meses = ['marco', 'abril', 'maio'];
     
@@ -353,17 +372,17 @@ function carregarTabelas(todosLancamentos) {
             tbody.innerHTML += `<tr>
                 <td>${colab.nome}</td>
                 <td>${colab.cargo}</td>
-                <td>${f50.toFixed(1)}</td>
-                <td>${f80.toFixed(1)}</td>
-                <td>${f100.toFixed(1)}</td>
-                <td>${fNot.toFixed(1)}</td>
-                <td style="background: var(--warning); font-weight: bold;">${falta.toFixed(1)}</td>
+                <td>${formatarHora(f50)}</td>
+                <td>${formatarHora(f80)}</td>
+                <td>${formatarHora(f100)}</td>
+                <td>${formatarHora(fNot)}</td>
+                <td style="background: var(--warning); font-weight: bold;">${formatarHora(falta)}</td>
             </tr>`;
         }
     }
 }
 
-// Carregar o Dashboard instantaneamente
+// Carregar o Dashboard (Formatado)
 async function carregarResumo(todosLancamentos) {
     const resumo = await Database.getResumoGeral(colaboradores, todosLancamentos);
     const corpo = document.getElementById("resumo-corpo");
@@ -374,17 +393,17 @@ async function carregarResumo(todosLancamentos) {
     resumo.forEach(item => {
         corpo.innerHTML += `<tr>
             <td><i class="fas fa-user"></i> ${item.colaborador.nome}</td>
-            <td>${item.totalGeral.h50.toFixed(1)}</td>
-            <td>${item.totalGeral.h80.toFixed(1)}</td>
-            <td>${item.totalGeral.h100.toFixed(1)}</td>
-            <td>${item.totalGeral.noturno.toFixed(1)}</td>
-            <td style="background: var(--success); font-weight: bold;">${item.totalGeral.total.toFixed(1)}</td>
+            <td>${formatarHora(item.totalGeral.h50)}</td>
+            <td>${formatarHora(item.totalGeral.h80)}</td>
+            <td>${formatarHora(item.totalGeral.h100)}</td>
+            <td>${formatarHora(item.totalGeral.noturno)}</td>
+            <td style="background: var(--success); font-weight: bold;">${formatarHora(item.totalGeral.total)}</td>
             <td><button onclick="excluirColaborador(${item.colaborador.id})" class="btn-primary" style="background: var(--danger); padding: 5px 10px;"><i class="fas fa-trash"></i></button></td>
         </tr>`;
     });
 }
 
-// Atualizar stats superiores
+// Atualizar stats superiores (Formatado)
 async function atualizarStats(todosLancamentos) {
     const resumo = await Database.getResumoGeral(colaboradores, todosLancamentos);
     const totalHoras = resumo.reduce((acc, item) => acc + item.totalGeral.total, 0);
@@ -393,7 +412,7 @@ async function atualizarStats(todosLancamentos) {
     const divHoras = document.getElementById("totalHorasDevidas");
     
     if(divColab) divColab.innerText = colaboradores.length;
-    if(divHoras) divHoras.innerText = totalHoras.toFixed(1);
+    if(divHoras) divHoras.innerText = formatarHora(totalHoras);
 }
 
 // Excluir colaborador
@@ -410,17 +429,28 @@ window.excluirColaborador = async function(id) {
 };
 
 // =========================================================================
-// MÁSCARA INTELIGENTE PARA HORAS (Como você pediu antes)
+// MÁSCARA INTELIGENTE PARA HORAS
 // =========================================================================
 function aplicarMascaraHora(evento) {
     let input = evento.target;
     if (evento.inputType === 'deleteContentBackward') return;
+    
     let v = input.value.replace(/\D/g, "");
     if (v.length > 4) v = v.substring(0, 4);
     
-    if (v.length === 3) input.value = v.substring(0, 1) + ":" + v.substring(1);
-    else if (v.length === 4) input.value = v.substring(0, 2) + ":" + v.substring(2);
-    else input.value = v;
+    if (v.length >= 3) {
+        let horas = v.substring(0, v.length - 2);
+        let minutos = v.substring(v.length - 2);
+        
+        // Impede que a pessoa digite minutos maiores que 59 (ex: 1:99 vira 1:59)
+        if (parseInt(minutos) > 59) {
+            minutos = "59";
+        }
+        
+        input.value = horas + ":" + minutos;
+    } else {
+        input.value = v;
+    }
 }
 
 function initMascaras() {
@@ -431,7 +461,7 @@ function initMascaras() {
     });
 }
 
-// Função para converter formato HH:MM
+// Função para converter formato HH:MM para salvar no Banco de Dados
 function converterTempoParaDecimal(tempoString) {
     if (!tempoString) return 0;
     if (tempoString.includes(':')) {
@@ -561,7 +591,7 @@ async function verificarConexao() {
     }
 }
 
-// Eventos dos filtros com atualização instantânea na memória local
+// Eventos dos filtros com atualização instantânea
 function initFiltros() {
     const filtros = ["filtroColaborador", "filtroPeriodo"];
     filtros.forEach(filtro => {
