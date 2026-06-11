@@ -99,7 +99,7 @@ const Database = {
         return data;
     },
 
-    // Resumo Geral com Matemática de Soma para Atrasos Indevidos
+    // Resumo Geral com Matemática de Soma para Atrasos Indevidos e Horas Excedentes
     async getResumoGeral(colabsCache = null, lancCache = null) {
         const colaboradores = colabsCache || await Database.getColaboradores();
         const lancamentos = lancCache || await Database.getLancamentos();
@@ -108,28 +108,45 @@ const Database = {
             const lancColab = lancamentos.filter(l => l.colaborador_id === colab.id);
             
             let totalGeral = { h50: 0, h80: 0, h100: 0, noturno: 0, atrasos: 0, total: 0 };
+            let totalExcedente = { h50: 0, h80: 0, h100: 0, noturno: 0, total: 0 }; // NOVO OBJETO PARA HORAS A MAIS
             
             lancColab.forEach(lanc => {
+                // Cálculo de dívidas da empresa para com o colaborador
                 const falta50 = Math.max(0, (lanc.h50 || 0) - (lanc.pago50 || 0));
                 const falta80 = Math.max(0, (lanc.h80 || 0) - (lanc.pago80 || 0));
                 const falta100 = Math.max(0, (lanc.h100 || 0) - (lanc.pago100 || 0));
                 const faltaNoturno = Math.max(0, (lanc.adicional_noturno || 0) - (lanc.pago_noturno || 0));
                 const atrasos = lanc.atrasos || 0;
                 
-                // O atraso indevido é SOMADO ao total de horas que a empresa deve (reembolso)
-                const totalFalta = (falta50 + falta80 + falta100 + faltaNoturno) + atrasos;
+                // NOVO: Cálculo do que foi pago a mais (pago menos o que era devido)
+                const exc50 = Math.max(0, (lanc.pago50 || 0) - (lanc.h50 || 0));
+                const exc80 = Math.max(0, (lanc.pago80 || 0) - (lanc.h80 || 0));
+                const exc100 = Math.max(0, (lanc.pago100 || 0) - (lanc.h100 || 0));
+                const excNoturno = Math.max(0, (lanc.pago_noturno || 0) - (lanc.adicional_noturno || 0));
                 
+                const totalFalta = (falta50 + falta80 + falta100 + faltaNoturno) + atrasos;
+                const totalExc = exc50 + exc80 + exc100 + excNoturno;
+                
+                // Soma devida
                 totalGeral.h50 += falta50;
                 totalGeral.h80 += falta80;
                 totalGeral.h100 += falta100;
                 totalGeral.noturno += faltaNoturno;
                 totalGeral.atrasos += atrasos;
                 totalGeral.total += totalFalta;
+
+                // Soma excedente
+                totalExcedente.h50 += exc50;
+                totalExcedente.h80 += exc80;
+                totalExcedente.h100 += exc100;
+                totalExcedente.noturno += excNoturno;
+                totalExcedente.total += totalExc;
             });
             
             return {
                 colaborador: colab,
-                totalGeral: totalGeral
+                totalGeral: totalGeral,
+                totalExcedente: totalExcedente // RETORNA O NOVO OBJETO
             };
         });
         
