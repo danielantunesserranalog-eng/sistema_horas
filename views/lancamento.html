@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         .grid-3-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 1.5rem; }
         @media(max-width: 900px) { .grid-3-col { grid-template-columns: 1fr; } }
@@ -41,7 +42,15 @@
 
             <div class="tab-content active-tab">
                 <div class="card">
-                    <h2><i class="fas fa-calculator"></i> Lançamento Simultâneo</h2>
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+                        <h2 style="margin: 0;"><i class="fas fa-calculator"></i> Lançamento Simultâneo</h2>
+                        <div>
+                            <input type="file" id="arquivoExcel" accept=".xlsx, .xls" style="display: none;">
+                            <button class="btn-primary" onclick="document.getElementById('arquivoExcel').click()" style="background: #10b981;">
+                                <i class="fas fa-file-excel"></i> Importar de Excel
+                            </button>
+                        </div>
+                    </div>
                     <div class="form-lancamento">
                         <div class="input-group">
                             <i class="fas fa-user-circle"></i>
@@ -109,6 +118,48 @@
                     <div id="maio" class="tabela-mes"><div class="table-wrapper"><table><thead><tr><th>Nome</th><th>Cargo</th><th>Devido 50%</th><th>Devido 80%</th><th>Devido 100%</th><th>Devido Noturno</th><th style="color:#ffffff;">Atrasos Indev.</th><th>Total Mês</th></tr></thead><tbody id="tabela-maio"></tbody></table></div></div>
                 </div>
             </div>
+            
+            <div id="modalImportacao" class="modal" style="display: none;">
+                <div class="modal-content card" style="max-width: 1200px; width: 95%; margin: auto; max-height: 90vh; overflow-y: auto;">
+                    <h2 style="display: flex; justify-content: space-between;">
+                        <span><i class="fas fa-file-import"></i> Prévia da Importação</span>
+                        <button onclick="document.getElementById('modalImportacao').style.display='none'" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary);">&times;</button>
+                    </h2>
+                    
+                    <div class="input-group" style="margin: 20px 0; max-width: 300px;">
+                        <i class="fas fa-calendar"></i>
+                        <select id="mesImportacao">
+                            <option value="marco">Competência: Março</option>
+                            <option value="abril">Competência: Abril</option>
+                            <option value="maio">Competência: Maio</option>
+                        </select>
+                    </div>
+
+                    <p style="color: var(--warning); font-size: 0.9rem; margin-bottom: 10px;">
+                        <i class="fas fa-info-circle"></i> Verifique se os nomes do Excel foram vinculados aos colaboradores corretos do sistema.
+                    </p>
+
+                    <div class="table-wrapper" style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border);">
+                        <table id="tabelaPreviewImportacao">
+                            <thead>
+                                <tr>
+                                    <th>Nome no Excel</th>
+                                    <th>Vincular a...</th>
+                                    <th>Ex. 50%</th><th>Ex. 80%</th><th>Ex. 100%</th><th>Noturno</th>
+                                    <th>Pg 50%</th><th>Pg 80%</th><th>Pg 100%</th><th>Pg Not.</th><th>Atrasos</th>
+                                </tr>
+                            </thead>
+                            <tbody id="corpoPreviewImportacao"></tbody>
+                        </table>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end;">
+                        <button onclick="document.getElementById('modalImportacao').style.display='none'" class="btn-primary" style="background: var(--bg-tertiary); color: var(--text-primary);">Cancelar</button>
+                        <button id="btnConfirmarImportacao" class="btn-primary" style="background: var(--success);"><i class="fas fa-check"></i> Salvar Lançamentos Selecionados</button>
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
     <script src="../js/supabase-config.js"></script>
