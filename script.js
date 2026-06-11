@@ -3,20 +3,8 @@ let dadosRelatorio = [];
 let lancamentosGlobais = []; 
 
 // =========================================================================
-// FUNÇÕES AUXILIARES DE SEGURANÇA E FORMATAÇÃO
+// FUNÇÕES DE FORMATAR HORA
 // =========================================================================
-// Pega o valor do input de forma segura sem travar o sistema
-function getValSeguro(id) {
-    const el = document.getElementById(id);
-    return el ? el.value : "";
-}
-
-// Seta o valor no input de forma segura
-function setValSeguro(id, valor) {
-    const el = document.getElementById(id);
-    if (el) el.value = valor;
-}
-
 function formatarHora(decimal) {
     if (!decimal || isNaN(decimal) || decimal <= 0) return "00:00";
     decimal = Math.max(0, decimal);
@@ -32,6 +20,17 @@ function formatarHoraInput(decimal) {
     const minutos = Math.round((decimal - horas) * 60);
     if (minutos === 60) return `${String(horas + 1).padStart(2, '0')}:00`;
     return `${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')}`;
+}
+
+// Pega o valor do input de forma segura
+function getValSeguro(id) {
+    const el = document.getElementById(id);
+    return el ? el.value : "";
+}
+
+function setValSeguro(id, valor) {
+    const el = document.getElementById(id);
+    if (el) el.value = valor;
 }
 
 // Carregar dados iniciais
@@ -61,7 +60,7 @@ function carregarFiltros() {
     });
 }
 
-// Obter dados do relatório
+// Obter dados do relatório bruto (Detalhado)
 async function obterDadosRelatorio(todosLancamentos = null) {
     const colaboradorId = document.getElementById("filtroColaborador").value;
     const periodo = document.getElementById("filtroPeriodo").value;
@@ -105,9 +104,38 @@ async function obterDadosRelatorio(todosLancamentos = null) {
     return dados;
 }
 
-// Atualizar prévia do relatório
+// =========================================================================
+// NOVO: Agrupa e soma os dados de todos os meses por Colaborador
+// =========================================================================
+function agruparDadosRelatorio(dados) {
+    const resumoMap = {};
+    dados.forEach(row => {
+        const chave = row.colaborador + "|" + row.cargo;
+        if (!resumoMap[chave]) {
+            resumoMap[chave] = {
+                colaborador: row.colaborador,
+                cargo: row.cargo,
+                h50: 0,
+                h80: 0,
+                h100: 0,
+                noturno: 0,
+                total: 0
+            };
+        }
+        resumoMap[chave].h50 += row.h50;
+        resumoMap[chave].h80 += row.h80;
+        resumoMap[chave].h100 += row.h100;
+        resumoMap[chave].noturno += row.noturno;
+        resumoMap[chave].total += row.total;
+    });
+    return Object.values(resumoMap);
+}
+
+// Atualizar prévia do relatório (Agrupado / Somado)
 async function atualizarPrevia(todosLancamentos = null) {
-    dadosRelatorio = await obterDadosRelatorio(todosLancamentos);
+    dadosRelatorio = await obterDadosRelatorio(todosLancamentos); // Pega todos os meses
+    const dadosAgrupados = agruparDadosRelatorio(dadosRelatorio); // Soma tudo por colaborador
+    
     const previewDiv = document.getElementById("previaTabela");
     const dataSpan = document.getElementById("previewData");
     
@@ -115,21 +143,21 @@ async function atualizarPrevia(todosLancamentos = null) {
     
     dataSpan.innerHTML = `<i class="fas fa-calendar"></i> Gerado em: ${new Date().toLocaleString()}`;
     
-    if (dadosRelatorio.length === 0) {
+    if (dadosAgrupados.length === 0) {
         previewDiv.innerHTML = '<div style="text-align: center; padding: 3rem; color: var(--text-secondary);"><i class="fas fa-chart-line" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>Nenhum dado encontrado com os filtros selecionados.</div>';
         return;
     }
     
     let html = '<table><thead><tr>';
-    html += '<th>Colaborador</th><th>Mês</th><th>Devido 50%</th><th>Devido 80%</th><th>Devido 100%</th><th>Ad. Noturno</th><th>Total (h)</th>';
+    html += '<th>Colaborador</th><th>Cargo</th><th>Devido 50%</th><th>Devido 80%</th><th>Devido 100%</th><th>Ad. Noturno</th><th>Total (h)</th>';
     html += '</tr></thead><tbody>';
     
     let tot50 = 0, tot80 = 0, tot100 = 0, totNot = 0, totGeral = 0;
 
-    dadosRelatorio.forEach(row => {
+    dadosAgrupados.forEach(row => {
         html += `<tr>
             <td>${row.colaborador}</td>
-            <td>${row.mes}</td>
+            <td>${row.cargo}</td>
             <td>${formatarHora(row.h50)}</td>
             <td>${formatarHora(row.h80)}</td>
             <td>${formatarHora(row.h100)}</td>
@@ -156,7 +184,7 @@ async function atualizarPrevia(todosLancamentos = null) {
     previewDiv.innerHTML = html;
 }
 
-// Gerar PDF
+// Gerar PDF (Agrupado / Somado)
 async function gerarPDF() {
     const btn = document.getElementById("btnExportPDF");
     btn.classList.add("loading");
@@ -167,15 +195,17 @@ async function gerarPDF() {
         
         doc.setFontSize(24);
         doc.setTextColor(99, 102, 241);
-        doc.text("HorasPro - Relatório Detalhado de Horas a Pagar", 20, 20);
+        doc.text("HorasPro - Resumo Consolidado de Horas a Pagar", 20, 20);
         
         doc.setFontSize(12);
         doc.setTextColor(100, 100, 100);
         doc.text(`Gerado em: ${new Date().toLocaleString()}`, 20, 35);
         
-        const tableData = dadosRelatorio.map(row => [
+        const dadosAgrupados = agruparDadosRelatorio(dadosRelatorio);
+        
+        const tableData = dadosAgrupados.map(row => [
             row.colaborador,
-            row.mes,
+            row.cargo,
             formatarHora(row.h50),
             formatarHora(row.h80),
             formatarHora(row.h100),
@@ -184,7 +214,7 @@ async function gerarPDF() {
         ]);
         
         let tot50 = 0, tot80 = 0, tot100 = 0, totNot = 0, totGeral = 0;
-        dadosRelatorio.forEach(row => {
+        dadosAgrupados.forEach(row => {
             tot50 += row.h50; tot80 += row.h80; tot100 += row.h100;
             totNot += row.noturno; totGeral += row.total;
         });
@@ -192,14 +222,14 @@ async function gerarPDF() {
         tableData.push(['TOTAL GERAL', '-', formatarHora(tot50), formatarHora(tot80), formatarHora(tot100), formatarHora(totNot), formatarHora(totGeral)]);
         
         doc.autoTable({
-            startY: 55,
-            head: [['Colaborador', 'Mês', 'Devido 50%', 'Devido 80%', 'Devido 100%', 'Ad. Noturno', 'Total']],
+            startY: 45,
+            head: [['Colaborador', 'Cargo', 'Devido 50%', 'Devido 80%', 'Devido 100%', 'Ad. Noturno', 'Total']],
             body: tableData,
             theme: 'grid',
             headStyles: { fillColor: [99, 102, 241], textColor: [255, 255, 255], fontStyle: 'bold' }
         });
         
-        doc.save(`relatorio_horas_${new Date().toISOString().slice(0,19)}.pdf`);
+        doc.save(`relatorio_resumo_horas_${new Date().toISOString().slice(0,19)}.pdf`);
         btn.classList.remove("loading");
     } catch (error) {
         alert("Erro ao gerar PDF.");
@@ -207,15 +237,19 @@ async function gerarPDF() {
     }
 }
 
-// Gerar Excel
+// Gerar Excel com as DUAS Planilhas (Resumo e Detalhado)
 async function gerarExcel() {
     const btn = document.getElementById("btnExportExcel");
     btn.classList.add("loading");
     
     try {
-        const excelData = dadosRelatorio.map(row => ({
+        const wb = XLSX.utils.book_new();
+        
+        // 1. DADOS AGRUPADOS (Planilha 1: Resumo)
+        const dadosAgrupados = agruparDadosRelatorio(dadosRelatorio);
+        const excelResumo = dadosAgrupados.map(row => ({
             'Colaborador': row.colaborador,
-            'Mês': row.mes,
+            'Cargo': row.cargo,
             'Devido 50%': formatarHora(row.h50),
             'Devido 80%': formatarHora(row.h80),
             'Devido 100%': formatarHora(row.h100),
@@ -224,43 +258,67 @@ async function gerarExcel() {
         }));
         
         let tot50 = 0, tot80 = 0, tot100 = 0, totNot = 0, totGeral = 0;
-        dadosRelatorio.forEach(row => {
+        dadosAgrupados.forEach(row => {
             tot50 += row.h50; tot80 += row.h80;
             tot100 += row.h100; totNot += row.noturno; totGeral += row.total;
         });
         
-        excelData.push({
-            'Colaborador': 'TOTAL GERAL', 'Mês': '-',
+        excelResumo.push({
+            'Colaborador': 'TOTAL GERAL', 'Cargo': '-',
             'Devido 50%': formatarHora(tot50), 'Devido 80%': formatarHora(tot80),
             'Devido 100%': formatarHora(tot100), 'Ad. Noturno': formatarHora(totNot), 'Total (h)': formatarHora(totGeral)
         });
         
-        const ws = XLSX.utils.json_to_sheet(excelData);
-        ws['!cols'] = [{ wch: 25 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }];
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Relatorio Horas");
+        const wsResumo = XLSX.utils.json_to_sheet(excelResumo);
+        wsResumo['!cols'] = [{ wch: 25 }, { wch: 20 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }];
+        XLSX.utils.book_append_sheet(wb, wsResumo, "Resumo Consolidado");
         
-        XLSX.writeFile(wb, `relatorio_horas_${new Date().toISOString().slice(0,19)}.xlsx`);
+        // 2. DADOS DETALHADOS MÊS A MÊS (Planilha 2: Detalhado)
+        const excelDetalhado = dadosRelatorio.map(row => ({
+            'Colaborador': row.colaborador,
+            'Cargo': row.cargo,
+            'Mês': row.mes,
+            'Devido 50%': formatarHora(row.h50),
+            'Devido 80%': formatarHora(row.h80),
+            'Devido 100%': formatarHora(row.h100),
+            'Ad. Noturno': formatarHora(row.noturno),
+            'Total (h)': formatarHora(row.total)
+        }));
+        
+        excelDetalhado.push({
+            'Colaborador': 'TOTAL GERAL', 'Cargo': '-', 'Mês': '-',
+            'Devido 50%': formatarHora(tot50), 'Devido 80%': formatarHora(tot80),
+            'Devido 100%': formatarHora(tot100), 'Ad. Noturno': formatarHora(totNot), 'Total (h)': formatarHora(totGeral)
+        });
+
+        const wsDetalhado = XLSX.utils.json_to_sheet(excelDetalhado);
+        wsDetalhado['!cols'] = [{ wch: 25 }, { wch: 20 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }];
+        XLSX.utils.book_append_sheet(wb, wsDetalhado, "Detalhado Mes a Mes");
+        
+        // Salva o arquivo Excel
+        XLSX.writeFile(wb, `relatorio_horas_completo_${new Date().toISOString().slice(0,19)}.xlsx`);
         btn.classList.remove("loading");
     } catch (error) {
+        console.error(error);
         alert("Erro ao gerar Excel.");
         btn.classList.remove("loading");
     }
 }
 
-// Gerar CSV
+// Gerar CSV (Exporta apenas o Resumo, pois CSV não suporta múltiplas abas)
 async function gerarCSV() {
     const btn = document.getElementById("btnExportCSV");
     btn.classList.add("loading");
     
     try {
-        const headers = ['Colaborador', 'Mês', 'Devido 50%', 'Devido 80%', 'Devido 100%', 'Ad. Noturno', 'Total (h)'];
-        const rows = dadosRelatorio.map(row => [
-            row.colaborador, row.mes, formatarHora(row.h50), formatarHora(row.h80), formatarHora(row.h100), formatarHora(row.noturno), formatarHora(row.total)
+        const dadosAgrupados = agruparDadosRelatorio(dadosRelatorio);
+        const headers = ['Colaborador', 'Cargo', 'Devido 50%', 'Devido 80%', 'Devido 100%', 'Ad. Noturno', 'Total (h)'];
+        const rows = dadosAgrupados.map(row => [
+            row.colaborador, row.cargo, formatarHora(row.h50), formatarHora(row.h80), formatarHora(row.h100), formatarHora(row.noturno), formatarHora(row.total)
         ]);
         
         let tot50 = 0, tot80 = 0, tot100 = 0, totNot = 0, totGeral = 0;
-        dadosRelatorio.forEach(row => {
+        dadosAgrupados.forEach(row => {
             tot50 += row.h50; tot80 += row.h80;
             tot100 += row.h100; totNot += row.noturno; totGeral += row.total;
         });
@@ -282,7 +340,7 @@ async function gerarCSV() {
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
         link.href = url;
-        link.setAttribute('download', `relatorio_horas_${new Date().toISOString().slice(0,19)}.csv`);
+        link.setAttribute('download', `relatorio_resumo_${new Date().toISOString().slice(0,19)}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -322,7 +380,7 @@ function atualizarLista() {
     `).join("");
 }
 
-// Carregar tabelas por mês
+// Carregar tabelas por mês (Aba Lançamento)
 function carregarTabelas(todosLancamentos) {
     const meses = ['marco', 'abril', 'maio'];
     
@@ -441,7 +499,7 @@ function limparFormulario() {
     });
 }
 
-// Preenche os inputs com o que já tem salvo no banco (Protegido contra travamentos)
+// Preenche os inputs com o que já tem salvo no banco
 window.preencherFormulario = function(colaboradorId) {
     limparFormulario();
     if (!colaboradorId) return;
@@ -473,7 +531,7 @@ function converterTempoParaDecimal(tempoString) {
     return parseFloat(tempoString.replace(',', '.')) || 0;
 }
 
-// Lançar horas - BLINDADO CONTRA ERROS
+// Lançar horas
 async function lancarHoras() {
     const colaboradorId = document.getElementById("colaboradorSelect").value;
     if (!colaboradorId) {
@@ -492,7 +550,6 @@ async function lancarHoras() {
 
     try {
         for (const mes of meses) {
-            // Usa o getValSeguro para nunca quebrar o script se algo sumir da tela
             const h50 = converterTempoParaDecimal(getValSeguro(`h50_${mes}`));
             const h80 = converterTempoParaDecimal(getValSeguro(`h80_${mes}`));
             const h100 = converterTempoParaDecimal(getValSeguro(`h100_${mes}`));
@@ -506,7 +563,6 @@ async function lancarHoras() {
             
             const lancExistente = lancamentosGlobais.find(l => l.colaborador_id == colaboradorId && l.mes === mes);
             
-            // Ignora o mês se estiver totalmente vazio e não tiver nada para apagar no banco
             if (somaTotal === 0 && !lancExistente) {
                 continue; 
             }
@@ -524,7 +580,6 @@ async function lancarHoras() {
                 pago_noturno: pagoNoturno
             };
             
-            // PROTEÇÃO EXTRA: Adiciona o ID existente para forçar o Update perfeito no Supabase
             if (lancExistente && lancExistente.id) {
                 lancamento.id = lancExistente.id;
             }
@@ -548,8 +603,8 @@ async function lancarHoras() {
     }
 
     if (sucesso) {
-        await carregarDadosIniciais(); // Atualiza a memória central do sistema
-        preencherFormulario(colaboradorId); // Recarrega os inputs confirmando o visual na tela
+        await carregarDadosIniciais(); 
+        preencherFormulario(colaboradorId); 
         alert("✅ Lançamentos salvos com sucesso em todos os meses!");
     } else {
         alert("❌ Ocorreu um erro ao salvar algumas horas. Tente novamente.");
