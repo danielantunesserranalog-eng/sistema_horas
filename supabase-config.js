@@ -99,7 +99,7 @@ const Database = {
         return data;
     },
 
-    // Agora usa cache para ser ultra rápido e não travar
+    // Usa cache para ser ultra rápido e adiciona os ATRASOS na conta
     async getResumoGeral(colabsCache = null, lancCache = null) {
         const colaboradores = colabsCache || await Database.getColaboradores();
         const lancamentos = lancCache || await Database.getLancamentos();
@@ -107,19 +107,23 @@ const Database = {
         const resumo = colaboradores.map(colab => {
             const lancColab = lancamentos.filter(l => l.colaborador_id === colab.id);
             
-            let totalGeral = { h50: 0, h80: 0, h100: 0, noturno: 0, total: 0 };
+            let totalGeral = { h50: 0, h80: 0, h100: 0, noturno: 0, atrasos: 0, total: 0 };
             
             lancColab.forEach(lanc => {
                 const falta50 = Math.max(0, (lanc.h50 || 0) - (lanc.pago50 || 0));
                 const falta80 = Math.max(0, (lanc.h80 || 0) - (lanc.pago80 || 0));
                 const falta100 = Math.max(0, (lanc.h100 || 0) - (lanc.pago100 || 0));
                 const faltaNoturno = Math.max(0, (lanc.adicional_noturno || 0) - (lanc.pago_noturno || 0));
-                const totalFalta = falta50 + falta80 + falta100 + faltaNoturno;
+                const atrasos = lanc.atrasos || 0;
+                
+                // O atraso é ABATIDO do total de horas que a empresa deve
+                const totalFalta = (falta50 + falta80 + falta100 + faltaNoturno) - atrasos;
                 
                 totalGeral.h50 += falta50;
                 totalGeral.h80 += falta80;
                 totalGeral.h100 += falta100;
                 totalGeral.noturno += faltaNoturno;
+                totalGeral.atrasos += atrasos;
                 totalGeral.total += totalFalta;
             });
             

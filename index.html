@@ -113,6 +113,7 @@
                                     <th>Devido 80%</th>
                                     <th>Devido 100%</th>
                                     <th>Ad. Noturno</th>
+                                    <th style="color: #ef4444;">Atrasos</th>
                                     <th>Total (h)</th>
                                     <th>Ações</th>
                                 </tr>
@@ -174,6 +175,9 @@
                                 <div class="input-group"><span class="badge">80%</span><input type="text" id="pago80_marco" placeholder="00:00"></div>
                                 <div class="input-group"><span class="badge">100%</span><input type="text" id="pago100_marco" placeholder="00:00"></div>
                                 <div class="input-group"><span class="badge">🌙 Not.</span><input type="text" id="pagoNoturno_marco" placeholder="00:00"></div>
+
+                                <div class="secao-titulo" style="color: #ef4444;"><i class="fas fa-minus-circle" style="color: #ef4444;"></i> Descontos</div>
+                                <div class="input-group"><span class="badge" style="background: #ef4444;">Atraso</span><input type="text" id="atrasos_marco" placeholder="00:00"></div>
                             </div>
 
                             <div class="sub-card">
@@ -190,6 +194,9 @@
                                 <div class="input-group"><span class="badge">80%</span><input type="text" id="pago80_abril" placeholder="00:00"></div>
                                 <div class="input-group"><span class="badge">100%</span><input type="text" id="pago100_abril" placeholder="00:00"></div>
                                 <div class="input-group"><span class="badge">🌙 Not.</span><input type="text" id="pagoNoturno_abril" placeholder="00:00"></div>
+
+                                <div class="secao-titulo" style="color: #ef4444;"><i class="fas fa-minus-circle" style="color: #ef4444;"></i> Descontos</div>
+                                <div class="input-group"><span class="badge" style="background: #ef4444;">Atraso</span><input type="text" id="atrasos_abril" placeholder="00:00"></div>
                             </div>
 
                             <div class="sub-card">
@@ -206,6 +213,9 @@
                                 <div class="input-group"><span class="badge">80%</span><input type="text" id="pago80_maio" placeholder="00:00"></div>
                                 <div class="input-group"><span class="badge">100%</span><input type="text" id="pago100_maio" placeholder="00:00"></div>
                                 <div class="input-group"><span class="badge">🌙 Not.</span><input type="text" id="pagoNoturno_maio" placeholder="00:00"></div>
+
+                                <div class="secao-titulo" style="color: #ef4444;"><i class="fas fa-minus-circle" style="color: #ef4444;"></i> Descontos</div>
+                                <div class="input-group"><span class="badge" style="background: #ef4444;">Atraso</span><input type="text" id="atrasos_maio" placeholder="00:00"></div>
                             </div>
                         </div>
 
@@ -232,7 +242,7 @@
                         <div class="table-wrapper">
                             <table>
                                 <thead>
-                                    <tr><th>Nome</th><th>Cargo</th><th>Devido 50%</th><th>Devido 80%</th><th>Devido 100%</th><th>Devido Noturno</th><th>Total Mês</th></tr>
+                                    <tr><th>Nome</th><th>Cargo</th><th>Devido 50%</th><th>Devido 80%</th><th>Devido 100%</th><th>Ad. Noturno</th><th style="color:#ef4444;">Atrasos</th><th>Total Mês</th></tr>
                                 </thead>
                                 <tbody id="tabela-marco"></tbody>
                             </table>
@@ -241,7 +251,7 @@
                     <div id="abril" class="tabela-mes">
                         <div class="table-wrapper">
                             <table>
-                                <thead><tr><th>Nome</th><th>Cargo</th><th>Devido 50%</th><th>Devido 80%</th><th>Devido 100%</th><th>Devido Noturno</th><th>Total Mês</th></tr></thead>
+                                <thead><tr><th>Nome</th><th>Cargo</th><th>Devido 50%</th><th>Devido 80%</th><th>Devido 100%</th><th>Ad. Noturno</th><th style="color:#ef4444;">Atrasos</th><th>Total Mês</th></tr></thead>
                                 <tbody id="tabela-abril"></tbody>
                             </table>
                         </div>
@@ -249,7 +259,7 @@
                     <div id="maio" class="tabela-mes">
                         <div class="table-wrapper">
                             <table>
-                                <thead><tr><th>Nome</th><th>Cargo</th><th>Devido 50%</th><th>Devido 80%</th><th>Devido 100%</th><th>Devido Noturno</th><th>Total Mês</th></tr></thead>
+                                <thead><tr><th>Nome</th><th>Cargo</th><th>Devido 50%</th><th>Devido 80%</th><th>Devido 100%</th><th>Ad. Noturno</th><th style="color:#ef4444;">Atrasos</th><th>Total Mês</th></tr></thead>
                                 <tbody id="tabela-maio"></tbody>
                             </table>
                         </div>
