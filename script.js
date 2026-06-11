@@ -3,22 +3,22 @@ let dadosRelatorio = [];
 let lancamentosGlobais = []; 
 
 // =========================================================================
-// FUNÇÃO MÁGICA: Converte o decimal do banco (ex: 1.5) de volta para tela (ex: 01:30)
+// FUNÇÕES DE FORMATAR HORA
 // =========================================================================
 function formatarHora(decimal) {
     if (!decimal || isNaN(decimal) || decimal <= 0) return "00:00";
-    
-    // Garante que não teremos números negativos
     decimal = Math.max(0, decimal);
-    
     const horas = Math.floor(decimal);
     const minutos = Math.round((decimal - horas) * 60);
-    
-    // Se o arredondamento bater 60 minutos, adiciona 1 hora
-    if (minutos === 60) {
-        return `${String(horas + 1).padStart(2, '0')}:00`;
-    }
-    
+    if (minutos === 60) return `${String(horas + 1).padStart(2, '0')}:00`;
+    return `${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')}`;
+}
+
+function formatarHoraInput(decimal) {
+    if (!decimal || isNaN(decimal) || decimal <= 0) return "";
+    const horas = Math.floor(decimal);
+    const minutos = Math.round((decimal - horas) * 60);
+    if (minutos === 60) return `${String(horas + 1).padStart(2, '0')}:00`;
     return `${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')}`;
 }
 
@@ -161,12 +161,6 @@ async function gerarPDF() {
         doc.setTextColor(100, 100, 100);
         doc.text(`Gerado em: ${new Date().toLocaleString()}`, 20, 35);
         
-        const colaborador = document.getElementById("filtroColaborador").selectedOptions[0].text;
-        const periodo = document.getElementById("filtroPeriodo").selectedOptions[0].text;
-        
-        doc.setFontSize(10);
-        doc.text(`Filtros: Colaborador (${colaborador}) | Período (${periodo})`, 20, 45);
-        
         const tableData = dadosRelatorio.map(row => [
             row.colaborador,
             row.mes,
@@ -179,11 +173,8 @@ async function gerarPDF() {
         
         let tot50 = 0, tot80 = 0, tot100 = 0, totNot = 0, totGeral = 0;
         dadosRelatorio.forEach(row => {
-            tot50 += row.h50;
-            tot80 += row.h80;
-            tot100 += row.h100;
-            totNot += row.noturno;
-            totGeral += row.total;
+            tot50 += row.h50; tot80 += row.h80; tot100 += row.h100;
+            totNot += row.noturno; totGeral += row.total;
         });
         
         tableData.push(['TOTAL GERAL', '-', formatarHora(tot50), formatarHora(tot80), formatarHora(tot100), formatarHora(totNot), formatarHora(totGeral)]);
@@ -193,29 +184,12 @@ async function gerarPDF() {
             head: [['Colaborador', 'Mês', 'Devido 50%', 'Devido 80%', 'Devido 100%', 'Ad. Noturno', 'Total']],
             body: tableData,
             theme: 'grid',
-            headStyles: { fillColor: [99, 102, 241], textColor: [255, 255, 255], fontStyle: 'bold' },
-            bodyStyles: { textColor: [0, 0, 0], fontSize: 9 },
-            alternateRowStyles: { fillColor: [240, 240, 250] }
+            headStyles: { fillColor: [99, 102, 241], textColor: [255, 255, 255], fontStyle: 'bold' }
         });
         
-        const pageCount = doc.internal.getNumberOfPages();
-        for (let i = 1; i <= pageCount; i++) {
-            doc.setPage(i);
-            doc.setFontSize(8);
-            doc.setTextColor(150, 150, 150);
-            doc.text(`Página ${i} de ${pageCount}`, doc.internal.pageSize.width - 30, doc.internal.pageSize.height - 10);
-        }
-        
         doc.save(`relatorio_horas_${new Date().toISOString().slice(0,19)}.pdf`);
-        
-        btn.style.background = "linear-gradient(135deg, #10b981, #059669)";
-        setTimeout(() => {
-            btn.style.background = "linear-gradient(135deg, #dc2626, #ef4444)";
-            btn.classList.remove("loading");
-        }, 1000);
-        
+        btn.classList.remove("loading");
     } catch (error) {
-        console.error("Erro ao gerar PDF:", error);
         alert("Erro ao gerar PDF.");
         btn.classList.remove("loading");
     }
@@ -251,20 +225,12 @@ async function gerarExcel() {
         
         const ws = XLSX.utils.json_to_sheet(excelData);
         ws['!cols'] = [{ wch: 25 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }];
-        
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Relatorio Horas");
         
         XLSX.writeFile(wb, `relatorio_horas_${new Date().toISOString().slice(0,19)}.xlsx`);
-        
-        btn.style.background = "linear-gradient(135deg, #34d399, #10b981)";
-        setTimeout(() => {
-            btn.style.background = "linear-gradient(135deg, #059669, #10b981)";
-            btn.classList.remove("loading");
-        }, 1000);
-        
+        btn.classList.remove("loading");
     } catch (error) {
-        console.error("Erro ao gerar Excel:", error);
         alert("Erro ao gerar Excel.");
         btn.classList.remove("loading");
     }
@@ -309,15 +275,8 @@ async function gerarCSV() {
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
-        
-        btn.style.background = "linear-gradient(135deg, #a78bfa, #8b5cf6)";
-        setTimeout(() => {
-            btn.style.background = "linear-gradient(135deg, #7c3aed, #8b5cf6)";
-            btn.classList.remove("loading");
-        }, 1000);
-        
+        btn.classList.remove("loading");
     } catch (error) {
-        console.error("Erro ao gerar CSV:", error);
         alert("Erro ao gerar CSV.");
         btn.classList.remove("loading");
     }
@@ -327,7 +286,7 @@ async function gerarCSV() {
 function atualizarSelect() {
     const select = document.getElementById("colaboradorSelect");
     if(!select) return;
-    select.innerHTML = '<option value="">Selecione um colaborador</option>';
+    select.innerHTML = '<option value="">Selecione um colaborador para carregar as horas</option>';
     colaboradores.forEach(colab => {
         select.innerHTML += `<option value="${colab.id}">${colab.nome} - ${colab.cargo}</option>`;
     });
@@ -351,7 +310,7 @@ function atualizarLista() {
     `).join("");
 }
 
-// Carregar tabelas por mês (Formatado)
+// Carregar tabelas por mês
 function carregarTabelas(todosLancamentos) {
     const meses = ['marco', 'abril', 'maio'];
     
@@ -382,7 +341,7 @@ function carregarTabelas(todosLancamentos) {
     }
 }
 
-// Carregar o Dashboard (Formatado)
+// Carregar o Dashboard
 async function carregarResumo(todosLancamentos) {
     const resumo = await Database.getResumoGeral(colaboradores, todosLancamentos);
     const corpo = document.getElementById("resumo-corpo");
@@ -403,7 +362,7 @@ async function carregarResumo(todosLancamentos) {
     });
 }
 
-// Atualizar stats superiores (Formatado)
+// Atualizar stats superiores
 async function atualizarStats(todosLancamentos) {
     const resumo = await Database.getResumoGeral(colaboradores, todosLancamentos);
     const totalHoras = resumo.reduce((acc, item) => acc + item.totalGeral.total, 0);
@@ -429,24 +388,21 @@ window.excluirColaborador = async function(id) {
 };
 
 // =========================================================================
-// MÁSCARA INTELIGENTE PARA HORAS
+// MÁSCARA E FORMULÁRIO (AGORA PERMITE ATÉ 999:59)
 // =========================================================================
 function aplicarMascaraHora(evento) {
     let input = evento.target;
     if (evento.inputType === 'deleteContentBackward') return;
     
     let v = input.value.replace(/\D/g, "");
-    if (v.length > 4) v = v.substring(0, 4);
+    
+    // AUMENTADO PARA 5 DÍGITOS (Ex: 14530 para 145:30)
+    if (v.length > 5) v = v.substring(0, 5);
     
     if (v.length >= 3) {
         let horas = v.substring(0, v.length - 2);
         let minutos = v.substring(v.length - 2);
-        
-        // Impede que a pessoa digite minutos maiores que 59 (ex: 1:99 vira 1:59)
-        if (parseInt(minutos) > 59) {
-            minutos = "59";
-        }
-        
+        if (parseInt(minutos) > 59) minutos = "59";
         input.value = horas + ":" + minutos;
     } else {
         input.value = v;
@@ -454,14 +410,50 @@ function aplicarMascaraHora(evento) {
 }
 
 function initMascaras() {
-    const camposHora = ["h50", "h80", "h100", "adicionalNoturno", "pago50", "pago80", "pago100", "pagoNoturno"];
-    camposHora.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.addEventListener("input", aplicarMascaraHora);
+    const meses = ['marco', 'abril', 'maio'];
+    const camposHora = ["h50", "h80", "h100", "noturno", "pago50", "pago80", "pago100", "pagoNoturno"];
+    
+    meses.forEach(mes => {
+        camposHora.forEach(campo => {
+            const el = document.getElementById(`${campo}_${mes}`);
+            if (el) el.addEventListener("input", aplicarMascaraHora);
+        });
     });
 }
 
-// Função para converter formato HH:MM para salvar no Banco de Dados
+function limparFormulario() {
+    const meses = ['marco', 'abril', 'maio'];
+    const campos = ["h50", "h80", "h100", "noturno", "pago50", "pago80", "pago100", "pagoNoturno"];
+    
+    meses.forEach(mes => {
+        campos.forEach(campo => {
+            const el = document.getElementById(`${campo}_${mes}`);
+            if(el) el.value = "";
+        });
+    });
+}
+
+// Função que preenche os inputs com o que já tem salvo no banco
+window.preencherFormulario = function(colaboradorId) {
+    limparFormulario();
+    if (!colaboradorId) return;
+
+    const meses = ['marco', 'abril', 'maio'];
+    meses.forEach(mes => {
+        const lanc = lancamentosGlobais.find(l => l.colaborador_id == colaboradorId && l.mes === mes);
+        if (lanc) {
+            document.getElementById(`h50_${mes}`).value = formatarHoraInput(lanc.h50);
+            document.getElementById(`h80_${mes}`).value = formatarHoraInput(lanc.h80);
+            document.getElementById(`h100_${mes}`).value = formatarHoraInput(lanc.h100);
+            document.getElementById(`noturno_${mes}`).value = formatarHoraInput(lanc.adicional_noturno);
+            document.getElementById(`pago50_${mes}`).value = formatarHoraInput(lanc.pago50);
+            document.getElementById(`pago80_${mes}`).value = formatarHoraInput(lanc.pago80);
+            document.getElementById(`pago100_${mes}`).value = formatarHoraInput(lanc.pago100);
+            document.getElementById(`pagoNoturno_${mes}`).value = formatarHoraInput(lanc.pago_noturno);
+        }
+    });
+};
+
 function converterTempoParaDecimal(tempoString) {
     if (!tempoString) return 0;
     if (tempoString.includes(':')) {
@@ -473,36 +465,74 @@ function converterTempoParaDecimal(tempoString) {
     return parseFloat(tempoString.replace(',', '.')) || 0;
 }
 
-// Lançar horas
+// Lançar horas 
 async function lancarHoras() {
     const colaboradorId = document.getElementById("colaboradorSelect").value;
     if (!colaboradorId) {
-        alert("Selecione um colaborador!");
+        alert("Selecione um colaborador primeiro!");
         return;
     }
     
-    const mesAtivo = document.querySelector(".mes-btn.active").getAttribute("data-mes");
+    const btnLancar = document.getElementById("btnLancar");
+    const textoOriginal = btnLancar.innerHTML;
+    btnLancar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+    btnLancar.disabled = true;
+
+    const meses = ['marco', 'abril', 'maio'];
+    let sucesso = true;
+    let salvouAlgum = false;
+
+    for (const mes of meses) {
+        const h50 = converterTempoParaDecimal(document.getElementById(`h50_${mes}`).value);
+        const h80 = converterTempoParaDecimal(document.getElementById(`h80_${mes}`).value);
+        const h100 = converterTempoParaDecimal(document.getElementById(`h100_${mes}`).value);
+        const noturno = converterTempoParaDecimal(document.getElementById(`noturno_${mes}`).value);
+        const pago50 = converterTempoParaDecimal(document.getElementById(`pago50_${mes}`).value);
+        const pago80 = converterTempoParaDecimal(document.getElementById(`pago80_${mes}`).value);
+        const pago100 = converterTempoParaDecimal(document.getElementById(`pago100_${mes}`).value);
+        const pagoNoturno = converterTempoParaDecimal(document.getElementById(`pagoNoturno_${mes}`).value);
+
+        const somaTotal = h50 + h80 + h100 + noturno + pago50 + pago80 + pago100 + pagoNoturno;
+        
+        const lancExistente = lancamentosGlobais.find(l => l.colaborador_id == colaboradorId && l.mes === mes);
+        
+        if (somaTotal === 0 && !lancExistente) {
+            continue; 
+        }
+
+        const lancamento = {
+            colaborador_id: parseInt(colaboradorId),
+            mes: mes,
+            h50: h50,
+            h80: h80,
+            h100: h100,
+            adicional_noturno: noturno,
+            pago50: pago50,
+            pago80: pago80,
+            pago100: pago100,
+            pago_noturno: pagoNoturno
+        };
+        
+        const result = await Database.upsertLancamento(lancamento);
+        if (!result) sucesso = false;
+        
+        salvouAlgum = true;
+    }
     
-    const lancamento = {
-        colaborador_id: parseInt(colaboradorId),
-        mes: mesAtivo,
-        h50: converterTempoParaDecimal(document.getElementById("h50").value),
-        h80: converterTempoParaDecimal(document.getElementById("h80").value),
-        h100: converterTempoParaDecimal(document.getElementById("h100").value),
-        adicional_noturno: converterTempoParaDecimal(document.getElementById("adicionalNoturno").value),
-        pago50: converterTempoParaDecimal(document.getElementById("pago50").value),
-        pago80: converterTempoParaDecimal(document.getElementById("pago80").value),
-        pago100: converterTempoParaDecimal(document.getElementById("pago100").value),
-        pago_noturno: converterTempoParaDecimal(document.getElementById("pagoNoturno").value)
-    };
-    
-    const result = await Database.upsertLancamento(lancamento);
-    if (result) {
-        await carregarDadosIniciais(); // Atualiza tudo automaticamente
-        alert("✅ Horas lançadas com sucesso!");
-        limparFormulario();
+    btnLancar.innerHTML = textoOriginal;
+    btnLancar.disabled = false;
+
+    if (!salvouAlgum) {
+        alert("⚠️ Nenhum valor foi preenchido para salvar.");
+        return;
+    }
+
+    if (sucesso) {
+        await carregarDadosIniciais(); 
+        preencherFormulario(colaboradorId); 
+        alert("✅ Lançamentos salvos com sucesso!");
     } else {
-        alert("❌ Erro ao lançar horas");
+        alert("❌ Ocorreu um erro ao salvar algumas horas.");
     }
 }
 
@@ -525,13 +555,6 @@ async function cadastrarColaborador() {
     } else {
         alert("❌ Erro ao cadastrar colaborador");
     }
-}
-
-function limparFormulario() {
-    ["h50", "h80", "h100", "adicionalNoturno", "pago50", "pago80", "pago100", "pagoNoturno"].forEach(id => {
-        const el = document.getElementById(id);
-        if(el) el.value = "";
-    });
 }
 
 // Navegação instantânea entre abas
@@ -560,7 +583,7 @@ function initTabs() {
     });
 }
 
-// Inicializar meses
+// Inicializar meses apenas para a visualização da Tabela
 function initMeses() {
     const botoes = document.querySelectorAll(".mes-btn");
     const tabelas = document.querySelectorAll(".tabela-mes");
@@ -591,7 +614,7 @@ async function verificarConexao() {
     }
 }
 
-// Eventos dos filtros com atualização instantânea
+// Eventos dos filtros
 function initFiltros() {
     const filtros = ["filtroColaborador", "filtroPeriodo"];
     filtros.forEach(filtro => {
@@ -610,6 +633,7 @@ async function init() {
     initMeses();
     initFiltros();
     initMascaras();
+    
     await carregarDadosIniciais();
     await verificarConexao();
     
@@ -627,6 +651,13 @@ async function init() {
     
     const btnCSV = document.getElementById("btnExportCSV");
     if(btnCSV) btnCSV.addEventListener("click", gerarCSV);
+
+    const colabSelect = document.getElementById("colaboradorSelect");
+    if(colabSelect) {
+        colabSelect.addEventListener("change", (e) => {
+            preencherFormulario(e.target.value);
+        });
+    }
 }
 
 init();

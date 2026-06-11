@@ -11,6 +11,38 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        .grid-3-col {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        @media(max-width: 900px) {
+            .grid-3-col { grid-template-columns: 1fr; }
+        }
+        .mes-header {
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+        .secao-titulo {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin: 20px 0 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .secao-titulo i {
+            color: var(--primary);
+        }
+    </style>
 </head>
 <body>
     <div class="app-container">
@@ -117,79 +149,86 @@
 
             <div id="lancamento" class="tab-content">
                 <div class="card">
-                    <h2><i class="fas fa-calendar-alt"></i> Lançamento de Horas</h2>
+                    <h2><i class="fas fa-calculator"></i> Lançamento Simultâneo</h2>
                     
-                    <div class="meses-selector">
-                        <button class="mes-btn active" data-mes="marco">
-                            <i class="fas fa-calendar"></i> Março
-                        </button>
-                        <button class="mes-btn" data-mes="abril">
-                            <i class="fas fa-calendar"></i> Abril
-                        </button>
-                        <button class="mes-btn" data-mes="maio">
-                            <i class="fas fa-calendar"></i> Maio
-                        </button>
-                    </div>
-
                     <div class="form-lancamento">
                         <div class="input-group">
                             <i class="fas fa-user-circle"></i>
                             <select id="colaboradorSelect">
-                                <option value="">Selecione um colaborador</option>
+                                <option value="">Selecione um colaborador para carregar as horas</option>
                             </select>
                         </div>
 
-                        <div class="grid-2-col">
+                        <div class="grid-3-col">
                             <div class="sub-card">
-                                <h3><i class="fas fa-plus-circle"></i> Horas Extras</h3>
-                                <div class="input-group">
-                                    <span class="badge">50%</span>
-                                    <input type="text" id="h50" placeholder="00:00">
-                                </div>
-                                <div class="input-group">
-                                    <span class="badge">80%</span>
-                                    <input type="text" id="h80" placeholder="00:00">
-                                </div>
-                                <div class="input-group">
-                                    <span class="badge">100%</span>
-                                    <input type="text" id="h100" placeholder="00:00">
-                                </div>
-                                <div class="input-group">
-                                    <span class="badge">🌙</span>
-                                    <input type="text" id="adicionalNoturno" placeholder="00:00">
-                                </div>
+                                <h3 class="mes-header"><i class="fas fa-calendar"></i> Março</h3>
+                                
+                                <div class="secao-titulo"><i class="fas fa-plus-circle"></i> Horas Extras</div>
+                                <div class="input-group"><span class="badge">50%</span><input type="text" id="h50_marco" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">80%</span><input type="text" id="h80_marco" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">100%</span><input type="text" id="h100_marco" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">🌙 Not.</span><input type="text" id="noturno_marco" placeholder="00:00"></div>
+                                
+                                <div class="secao-titulo"><i class="fas fa-check-circle"></i> Já Pago</div>
+                                <div class="input-group"><span class="badge">50%</span><input type="text" id="pago50_marco" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">80%</span><input type="text" id="pago80_marco" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">100%</span><input type="text" id="pago100_marco" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">🌙 Not.</span><input type="text" id="pagoNoturno_marco" placeholder="00:00"></div>
                             </div>
 
                             <div class="sub-card">
-                                <h3><i class="fas fa-check-circle"></i> Já Pago pela Empresa</h3>
-                                <div class="input-group">
-                                    <span class="badge">50%</span>
-                                    <input type="text" id="pago50" placeholder="00:00">
-                                </div>
-                                <div class="input-group">
-                                    <span class="badge">80%</span>
-                                    <input type="text" id="pago80" placeholder="00:00">
-                                </div>
-                                <div class="input-group">
-                                    <span class="badge">100%</span>
-                                    <input type="text" id="pago100" placeholder="00:00">
-                                </div>
-                                <div class="input-group">
-                                    <span class="badge">🌙</span>
-                                    <input type="text" id="pagoNoturno" placeholder="00:00">
-                                </div>
+                                <h3 class="mes-header"><i class="fas fa-calendar"></i> Abril</h3>
+                                
+                                <div class="secao-titulo"><i class="fas fa-plus-circle"></i> Horas Extras</div>
+                                <div class="input-group"><span class="badge">50%</span><input type="text" id="h50_abril" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">80%</span><input type="text" id="h80_abril" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">100%</span><input type="text" id="h100_abril" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">🌙 Not.</span><input type="text" id="noturno_abril" placeholder="00:00"></div>
+                                
+                                <div class="secao-titulo"><i class="fas fa-check-circle"></i> Já Pago</div>
+                                <div class="input-group"><span class="badge">50%</span><input type="text" id="pago50_abril" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">80%</span><input type="text" id="pago80_abril" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">100%</span><input type="text" id="pago100_abril" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">🌙 Not.</span><input type="text" id="pagoNoturno_abril" placeholder="00:00"></div>
+                            </div>
+
+                            <div class="sub-card">
+                                <h3 class="mes-header"><i class="fas fa-calendar"></i> Maio</h3>
+                                
+                                <div class="secao-titulo"><i class="fas fa-plus-circle"></i> Horas Extras</div>
+                                <div class="input-group"><span class="badge">50%</span><input type="text" id="h50_maio" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">80%</span><input type="text" id="h80_maio" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">100%</span><input type="text" id="h100_maio" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">🌙 Not.</span><input type="text" id="noturno_maio" placeholder="00:00"></div>
+                                
+                                <div class="secao-titulo"><i class="fas fa-check-circle"></i> Já Pago</div>
+                                <div class="input-group"><span class="badge">50%</span><input type="text" id="pago50_maio" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">80%</span><input type="text" id="pago80_maio" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">100%</span><input type="text" id="pago100_maio" placeholder="00:00"></div>
+                                <div class="input-group"><span class="badge">🌙 Not.</span><input type="text" id="pagoNoturno_maio" placeholder="00:00"></div>
                             </div>
                         </div>
 
-                        <button id="btnLancar" class="btn-primary btn-large">
-                            <i class="fas fa-cloud-upload-alt"></i> Lançar Horas
+                        <button id="btnLancar" class="btn-primary btn-large" style="margin-top: 2rem; width: 100%;">
+                            <i class="fas fa-cloud-upload-alt"></i> Salvar Lançamentos dos 3 Meses
                         </button>
                     </div>
                 </div>
 
                 <div class="card tabelas-container">
+                    <div class="meses-selector" style="margin-bottom: 20px;">
+                        <button class="mes-btn active" data-mes="marco">
+                            <i class="fas fa-calendar"></i> Tabela Março
+                        </button>
+                        <button class="mes-btn" data-mes="abril">
+                            <i class="fas fa-calendar"></i> Tabela Abril
+                        </button>
+                        <button class="mes-btn" data-mes="maio">
+                            <i class="fas fa-calendar"></i> Tabela Maio
+                        </button>
+                    </div>
+
                     <div id="marco" class="tabela-mes active-mes">
-                        <h3><i class="fas fa-calendar-alt"></i> Março - Valores que FALTAM PAGAR</h3>
                         <div class="table-wrapper">
                             <table>
                                 <thead>
@@ -200,7 +239,6 @@
                         </div>
                     </div>
                     <div id="abril" class="tabela-mes">
-                        <h3><i class="fas fa-calendar-alt"></i> Abril - Valores que FALTAM PAGAR</h3>
                         <div class="table-wrapper">
                             <table>
                                 <thead><tr><th>Nome</th><th>Cargo</th><th>Devido 50%</th><th>Devido 80%</th><th>Devido 100%</th><th>Devido Noturno</th><th>Total Mês</th></tr></thead>
@@ -209,7 +247,6 @@
                         </div>
                     </div>
                     <div id="maio" class="tabela-mes">
-                        <h3><i class="fas fa-calendar-alt"></i> Maio - Valores que FALTAM PAGAR</h3>
                         <div class="table-wrapper">
                             <table>
                                 <thead><tr><th>Nome</th><th>Cargo</th><th>Devido 50%</th><th>Devido 80%</th><th>Devido 100%</th><th>Devido Noturno</th><th>Total Mês</th></tr></thead>
@@ -273,7 +310,7 @@
                 </div>
 
                 <div class="card">
-                    <h2><i class="fas fa-eye"></i> Prévia do Relatório (Separado por Categoria)</h2>
+                    <h2><i class="fas fa-eye"></i> Prévia do Relatório</h2>
                     <div class="relatorio-preview" id="relatorioPreview">
                         <div class="preview-header">
                             <i class="fas fa-chart-line"></i>
