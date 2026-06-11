@@ -57,7 +57,6 @@ function carregarFiltros() {
     });
 }
 
-// Obter dados do relatório bruto
 async function obterDadosRelatorio(todosLancamentos = null) {
     const colaboradorId = document.getElementById("filtroColaborador").value;
     const periodo = document.getElementById("filtroPeriodo").value;
@@ -105,7 +104,6 @@ async function obterDadosRelatorio(todosLancamentos = null) {
     return dados;
 }
 
-// Agrupa e soma os dados de todos os meses por Colaborador
 function agruparDadosRelatorio(dados) {
     const resumoMap = {};
     dados.forEach(row => {
@@ -132,7 +130,6 @@ function agruparDadosRelatorio(dados) {
     return Object.values(resumoMap);
 }
 
-// Atualizar prévia do relatório (Agrupado)
 async function atualizarPrevia(todosLancamentos = null) {
     dadosRelatorio = await obterDadosRelatorio(todosLancamentos);
     const dadosAgrupados = agruparDadosRelatorio(dadosRelatorio);
@@ -150,7 +147,7 @@ async function atualizarPrevia(todosLancamentos = null) {
     }
     
     let html = '<table><thead><tr>';
-    html += '<th>Colaborador</th><th>Cargo</th><th>Devido 50%</th><th>Devido 80%</th><th>Devido 100%</th><th>Ad. Noturno</th><th style="color:#8b5cf6;">Atrasos Indev.</th><th>Total (h)</th>';
+    html += '<th>Colaborador</th><th>Cargo</th><th>Devido 50%</th><th>Devido 80%</th><th>Devido 100%</th><th>Ad. Noturno</th><th style="color:#ffffff;">Atrasos Indev.</th><th>Total (h)</th>';
     html += '</tr></thead><tbody>';
     
     let tot50 = 0, tot80 = 0, tot100 = 0, totNot = 0, totAtraso = 0, totGeral = 0;
@@ -163,7 +160,7 @@ async function atualizarPrevia(todosLancamentos = null) {
             <td>${formatarHora(row.h80)}</td>
             <td>${formatarHora(row.h100)}</td>
             <td>${formatarHora(row.noturno)}</td>
-            <td style="color:#8b5cf6;">${formatarHora(row.atrasos)}</td>
+            <td style="color:#ffffff;">${formatarHora(row.atrasos)}</td>
             <td><strong>${formatarHora(row.total)}</strong></td>
         </tr>`;
         tot50 += row.h50;
@@ -180,7 +177,7 @@ async function atualizarPrevia(todosLancamentos = null) {
         <td><strong>${formatarHora(tot80)}</strong></td>
         <td><strong>${formatarHora(tot100)}</strong></td>
         <td><strong>${formatarHora(totNot)}</strong></td>
-        <td style="color:#8b5cf6;"><strong>${formatarHora(totAtraso)}</strong></td>
+        <td style="color:#ffffff;"><strong>${formatarHora(totAtraso)}</strong></td>
         <td><strong>${formatarHora(totGeral)}</strong></td>
     </tr>`;
     
@@ -188,7 +185,6 @@ async function atualizarPrevia(todosLancamentos = null) {
     previewDiv.innerHTML = html;
 }
 
-// Gerar PDF
 async function gerarPDF() {
     const btn = document.getElementById("btnExportPDF");
     btn.classList.add("loading");
@@ -242,7 +238,6 @@ async function gerarPDF() {
     }
 }
 
-// Gerar Excel com as DUAS Planilhas
 async function gerarExcel() {
     const btn = document.getElementById("btnExportExcel");
     btn.classList.add("loading");
@@ -312,7 +307,6 @@ async function gerarExcel() {
     }
 }
 
-// Gerar CSV
 async function gerarCSV() {
     const btn = document.getElementById("btnExportCSV");
     btn.classList.add("loading");
@@ -385,7 +379,6 @@ function atualizarLista() {
     `).join("");
 }
 
-// Carregar tabelas por mês (Aba Lançamento)
 function carregarTabelas(todosLancamentos) {
     const meses = ['marco', 'abril', 'maio'];
     
@@ -402,7 +395,7 @@ function carregarTabelas(todosLancamentos) {
             const f100 = Math.max(0, (lanc?.h100 || 0) - (lanc?.pago100 || 0));
             const fNot = Math.max(0, (lanc?.adicional_noturno || 0) - (lanc?.pago_noturno || 0));
             const fAtraso = lanc?.atrasos || 0;
-            const falta = (f50 + f80 + f100 + fNot) + fAtraso; // SOMA na visualização
+            const falta = (f50 + f80 + f100 + fNot) + fAtraso; 
             
             tbody.innerHTML += `<tr>
                 <td>${colab.nome}</td>
@@ -411,14 +404,13 @@ function carregarTabelas(todosLancamentos) {
                 <td>${formatarHora(f80)}</td>
                 <td>${formatarHora(f100)}</td>
                 <td>${formatarHora(fNot)}</td>
-                <td style="color:#8b5cf6;">${formatarHora(fAtraso)}</td>
+                <td style="color:#ffffff;">${formatarHora(fAtraso)}</td>
                 <td style="background: var(--warning); font-weight: bold;">${formatarHora(falta)}</td>
             </tr>`;
         }
     }
 }
 
-// Carregar o Dashboard
 async function carregarResumo(todosLancamentos) {
     const resumo = await Database.getResumoGeral(colaboradores, todosLancamentos);
     const corpo = document.getElementById("resumo-corpo");
@@ -433,7 +425,7 @@ async function carregarResumo(todosLancamentos) {
             <td>${formatarHora(item.totalGeral.h80)}</td>
             <td>${formatarHora(item.totalGeral.h100)}</td>
             <td>${formatarHora(item.totalGeral.noturno)}</td>
-            <td style="color:#8b5cf6; font-weight: bold;">${formatarHora(item.totalGeral.atrasos)}</td>
+            <td style="color:#ffffff; font-weight: bold;">${formatarHora(item.totalGeral.atrasos)}</td>
             <td style="background: var(--success); font-weight: bold;">${formatarHora(item.totalGeral.total)}</td>
             <td><button onclick="excluirColaborador(${item.colaborador.id})" class="btn-primary" style="background: var(--danger); padding: 5px 10px;"><i class="fas fa-trash"></i></button></td>
         </tr>`;
