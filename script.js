@@ -1,32 +1,43 @@
 let colaboradores = [];
 let dadosRelatorio = [];
+let lancamentosGlobais = []; // Memória central para acabar com a lentidão de telas
 
-// Carregar dados iniciais
+// Carregar dados iniciais (Apenas 1 carregamento mega rápido)
 async function carregarDadosIniciais() {
     await initSupabase();
-    await carregarColaboradores();
-    await carregarTabelas();
-    await carregarResumo();
-    await carregarFiltros();
-    await atualizarPrevia();
-    atualizarStats();
+    
+    // CARREGA TUDO DE UMA VEZ
+    colaboradores = await Database.getColaboradores();
+    lancamentosGlobais = await Database.getLancamentos();
+    
+    atualizarSelect();
+    atualizarLista();
+    
+    carregarTabelas(lancamentosGlobais);
+    await carregarResumo(lancamentosGlobais);
+    carregarFiltros();
+    await atualizarPrevia(lancamentosGlobais);
+    await atualizarStats(lancamentosGlobais);
 }
 
 // Carregar filtros
-async function carregarFiltros() {
+function carregarFiltros() {
     const filtroColab = document.getElementById("filtroColaborador");
+    if (!filtroColab) return;
     filtroColab.innerHTML = '<option value="todos">Todos os colaboradores</option>';
     colaboradores.forEach(colab => {
         filtroColab.innerHTML += `<option value="${colab.id}">${colab.nome}</option>`;
     });
 }
 
-// Obter dados do relatório com filtros
-async function obterDadosRelatorio() {
+// Obter dados do relatório com filtros usando a memória global
+async function obterDadosRelatorio(todosLancamentos = null) {
     const colaboradorId = document.getElementById("filtroColaborador").value;
     const periodo = document.getElementById("filtroPeriodo").value;
     
-    const resumo = await Database.getResumoGeral();
+    if (!todosLancamentos) todosLancamentos = lancamentosGlobais;
+    
+    const resumo = await Database.getResumoGeral(colaboradores, todosLancamentos);
     let dados = [];
     
     for (const item of resumo) {
@@ -35,8 +46,7 @@ async function obterDadosRelatorio() {
         const meses = periodo === "todos" ? ["marco", "abril", "maio"] : [periodo];
         
         for (const mes of meses) {
-            const lancamentos = await Database.getLancamentos(item.colaborador.id, mes);
-            const lanc = lancamentos[0];
+            const lanc = todosLancamentos.find(l => l.colaborador_id === item.colaborador.id && l.mes === mes);
             
             if (!lanc && periodo !== "todos") continue;
             
@@ -65,10 +75,12 @@ async function obterDadosRelatorio() {
 }
 
 // Atualizar prévia do relatório
-async function atualizarPrevia() {
-    dadosRelatorio = await obterDadosRelatorio();
+async function atualizarPrevia(todosLancamentos = null) {
+    dadosRelatorio = await obterDadosRelatorio(todosLancamentos);
     const previewDiv = document.getElementById("previaTabela");
     const dataSpan = document.getElementById("previewData");
+    
+    if(!previewDiv) return;
     
     dataSpan.innerHTML = `<i class="fas fa-calendar"></i> Gerado em: ${new Date().toLocaleString()}`;
     
@@ -100,7 +112,6 @@ async function atualizarPrevia() {
         totGeral += parseFloat(row.total);
     });
     
-    // Adicionar total no rodape
     html += `<tr style="background: var(--accent);">
         <td colspan="2"><strong>TOTAL GERAL</strong></td>
         <td><strong>${tot50.toFixed(1)}h</strong></td>
@@ -293,16 +304,10 @@ async function gerarCSV() {
     }
 }
 
-// Carregar colaboradores
-async function carregarColaboradores() {
-    colaboradores = await Database.getColaboradores();
-    atualizarSelect();
-    atualizarLista();
-}
-
 // Atualizar select de colaboradores
 function atualizarSelect() {
     const select = document.getElementById("colaboradorSelect");
+    if(!select) return;
     select.innerHTML = '<option value="">Selecione um colaborador</option>';
     colaboradores.forEach(colab => {
         select.innerHTML += `<option value="${colab.id}">${colab.nome} - ${colab.cargo}</option>`;
@@ -312,6 +317,7 @@ function atualizarSelect() {
 // Atualizar lista de colaboradores
 function atualizarLista() {
     const container = document.getElementById("listaNomes");
+    if(!container) return;
     if (colaboradores.length === 0) {
         container.innerHTML = '<div class="loading">Nenhum colaborador cadastrado</div>';
         return;
@@ -326,8 +332,8 @@ function atualizarLista() {
     `).join("");
 }
 
-// Carregar tabelas por mês
-async function carregarTabelas() {
+// Carregar tabelas por mês de forma Instantânea
+function carregarTabelas(todosLancamentos) {
     const meses = ['marco', 'abril', 'maio'];
     
     for (const mes of meses) {
@@ -335,12 +341,9 @@ async function carregarTabelas() {
         if (!tbody) continue;
         tbody.innerHTML = '';
         
-        const lancamentos = await Database.getLancamentos(null, mes);
-        
         for (const colab of colaboradores) {
-            const lanc = lancamentos.find(l => l.colaborador_id === colab.id);
+            const lanc = todosLancamentos.find(l => l.colaborador_id === colab.id && l.mes === mes);
             
-            // Calculamos o DEVIDO aqui (lancado - pago)
             const f50 = Math.max(0, (lanc?.h50 || 0) - (lanc?.pago50 || 0));
             const f80 = Math.max(0, (lanc?.h80 || 0) - (lanc?.pago80 || 0));
             const f100 = Math.max(0, (lanc?.h100 || 0) - (lanc?.pago100 || 0));
@@ -360,10 +363,12 @@ async function carregarTabelas() {
     }
 }
 
-// Carregar resumo
-async function carregarResumo() {
-    const resumo = await Database.getResumoGeral();
+// Carregar o Dashboard instantaneamente
+async function carregarResumo(todosLancamentos) {
+    const resumo = await Database.getResumoGeral(colaboradores, todosLancamentos);
     const corpo = document.getElementById("resumo-corpo");
+    if (!corpo) return;
+    
     corpo.innerHTML = '';
     
     resumo.forEach(item => {
@@ -379,12 +384,16 @@ async function carregarResumo() {
     });
 }
 
-// Atualizar stats
-async function atualizarStats() {
-    const resumo = await Database.getResumoGeral();
+// Atualizar stats superiores
+async function atualizarStats(todosLancamentos) {
+    const resumo = await Database.getResumoGeral(colaboradores, todosLancamentos);
     const totalHoras = resumo.reduce((acc, item) => acc + item.totalGeral.total, 0);
-    document.getElementById("totalColaboradores").innerText = colaboradores.length;
-    document.getElementById("totalHorasDevidas").innerText = totalHoras.toFixed(1);
+    
+    const divColab = document.getElementById("totalColaboradores");
+    const divHoras = document.getElementById("totalHorasDevidas");
+    
+    if(divColab) divColab.innerText = colaboradores.length;
+    if(divHoras) divHoras.innerText = totalHoras.toFixed(1);
 }
 
 // Excluir colaborador
@@ -400,17 +409,37 @@ window.excluirColaborador = async function(id) {
     }
 };
 
-// Função para converter formato HH:MM (ex: 01:30) para decimal (ex: 1.5)
+// =========================================================================
+// MÁSCARA INTELIGENTE PARA HORAS (Como você pediu antes)
+// =========================================================================
+function aplicarMascaraHora(evento) {
+    let input = evento.target;
+    if (evento.inputType === 'deleteContentBackward') return;
+    let v = input.value.replace(/\D/g, "");
+    if (v.length > 4) v = v.substring(0, 4);
+    
+    if (v.length === 3) input.value = v.substring(0, 1) + ":" + v.substring(1);
+    else if (v.length === 4) input.value = v.substring(0, 2) + ":" + v.substring(2);
+    else input.value = v;
+}
+
+function initMascaras() {
+    const camposHora = ["h50", "h80", "h100", "adicionalNoturno", "pago50", "pago80", "pago100", "pagoNoturno"];
+    camposHora.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener("input", aplicarMascaraHora);
+    });
+}
+
+// Função para converter formato HH:MM
 function converterTempoParaDecimal(tempoString) {
     if (!tempoString) return 0;
-    
     if (tempoString.includes(':')) {
         const partes = tempoString.split(':');
         const horas = parseInt(partes[0], 10) || 0;
         const minutos = parseInt(partes[1], 10) || 0;
         return horas + (minutos / 60);
     }
-    
     return parseFloat(tempoString.replace(',', '.')) || 0;
 }
 
@@ -439,7 +468,7 @@ async function lancarHoras() {
     
     const result = await Database.upsertLancamento(lancamento);
     if (result) {
-        await carregarDadosIniciais();
+        await carregarDadosIniciais(); // Atualiza tudo automaticamente
         alert("✅ Horas lançadas com sucesso!");
         limparFormulario();
     } else {
@@ -470,11 +499,12 @@ async function cadastrarColaborador() {
 
 function limparFormulario() {
     ["h50", "h80", "h100", "adicionalNoturno", "pago50", "pago80", "pago100", "pagoNoturno"].forEach(id => {
-        document.getElementById(id).value = "";
+        const el = document.getElementById(id);
+        if(el) el.value = "";
     });
 }
 
-// Navegação entre abas
+// Navegação instantânea entre abas
 function initTabs() {
     const navItems = document.querySelectorAll(".nav-item");
     const tabs = document.querySelectorAll(".tab-content");
@@ -520,6 +550,7 @@ function initMeses() {
 async function verificarConexao() {
     const dbStatus = document.getElementById("dbStatus");
     const supabase = await initSupabase();
+    if(!dbStatus) return;
     
     if (supabase) {
         dbStatus.innerHTML = '<i class="fas fa-check-circle" style="color: #10b981;"></i> Banco Conectado';
@@ -530,14 +561,14 @@ async function verificarConexao() {
     }
 }
 
-// Eventos dos filtros (sem o filtroTipo agora)
+// Eventos dos filtros com atualização instantânea na memória local
 function initFiltros() {
     const filtros = ["filtroColaborador", "filtroPeriodo"];
     filtros.forEach(filtro => {
         const elemento = document.getElementById(filtro);
         if (elemento) {
             elemento.addEventListener("change", () => {
-                atualizarPrevia();
+                atualizarPrevia(lancamentosGlobais);
             });
         }
     });
@@ -548,6 +579,7 @@ async function init() {
     initTabs();
     initMeses();
     initFiltros();
+    initMascaras();
     await carregarDadosIniciais();
     await verificarConexao();
     
@@ -557,9 +589,14 @@ async function init() {
     const btnCadastrar = document.getElementById("btnCadastrar");
     if (btnCadastrar) btnCadastrar.addEventListener("click", cadastrarColaborador);
 
-    document.getElementById("btnExportPDF").addEventListener("click", gerarPDF);
-    document.getElementById("btnExportExcel").addEventListener("click", gerarExcel);
-    document.getElementById("btnExportCSV").addEventListener("click", gerarCSV);
+    const btnPDF = document.getElementById("btnExportPDF");
+    if (btnPDF) btnPDF.addEventListener("click", gerarPDF);
+    
+    const btnExcel = document.getElementById("btnExportExcel");
+    if(btnExcel) btnExcel.addEventListener("click", gerarExcel);
+    
+    const btnCSV = document.getElementById("btnExportCSV");
+    if(btnCSV) btnCSV.addEventListener("click", gerarCSV);
 }
 
 init();

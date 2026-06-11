@@ -99,9 +99,10 @@ const Database = {
         return data;
     },
 
-    async getResumoGeral() {
-        const colaboradores = await this.getColaboradores();
-        const lancamentos = await this.getLancamentos();
+    // Agora usa cache para ser ultra rápido e não travar
+    async getResumoGeral(colabsCache = null, lancCache = null) {
+        const colaboradores = colabsCache || await Database.getColaboradores();
+        const lancamentos = lancCache || await Database.getLancamentos();
         
         const resumo = colaboradores.map(colab => {
             const lancColab = lancamentos.filter(l => l.colaborador_id === colab.id);
