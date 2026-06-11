@@ -388,12 +388,15 @@ window.excluirColaborador = async function(id) {
 };
 
 // =========================================================================
-// MÁSCARA E FORMULÁRIO (AGORA PERMITE ATÉ 999:59)
+// MÁSCARA INTELIGENTE - SEM TRAVAR OS MINUTOS AO DIGITAR
 // =========================================================================
 function aplicarMascaraHora(evento) {
     let input = evento.target;
+    
+    // Deixa apagar livremente sem recriar a máscara atrapalhando o usuário
     if (evento.inputType === 'deleteContentBackward') return;
     
+    // Remove tudo que não é número
     let v = input.value.replace(/\D/g, "");
     
     // AUMENTADO PARA 5 DÍGITOS (Ex: 14530 para 145:30)
@@ -402,7 +405,8 @@ function aplicarMascaraHora(evento) {
     if (v.length >= 3) {
         let horas = v.substring(0, v.length - 2);
         let minutos = v.substring(v.length - 2);
-        if (parseInt(minutos) > 59) minutos = "59";
+        
+        // Removi o bloqueio de "minutos = 59" para não quebrar a sua digitação rápida!
         input.value = horas + ":" + minutos;
     } else {
         input.value = v;
@@ -465,7 +469,7 @@ function converterTempoParaDecimal(tempoString) {
     return parseFloat(tempoString.replace(',', '.')) || 0;
 }
 
-// Lançar horas 
+// Lançar horas - COM PROTEÇÃO DE MESES VAZIOS
 async function lancarHoras() {
     const colaboradorId = document.getElementById("colaboradorSelect").value;
     if (!colaboradorId) {
