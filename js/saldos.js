@@ -131,9 +131,9 @@ async function gerarPDFSaldos() {
             head: [
                 [
                     'Colaborador',
-                    'Pg.50', 'Pg.80', 'Pg.100', 'Pg.Not', 'Pg.Atr', 
-                    'Ex.50', 'Ex.80', 'Ex.100', 'Ex.Not', 
-                    'S.50', 'S.80', 'S.100', 'S.Not', 'S.Atr', 'TOTAL'
+                    'A Pagar\n50%', 'A Pagar\n80%', 'A Pagar\n100%', 'A Pagar\nNoturno', 'Reemb.\nAtraso', 
+                    'Descontar\n50%', 'Descontar\n80%', 'Descontar\n100%', 'Descontar\nNoturno', 
+                    'Saldo Liq.\n50%', 'Saldo Liq.\n80%', 'Saldo Liq.\n100%', 'Saldo Liq.\nNoturno', 'Saldo Liq.\nAtraso', 'SALDO\nTOTAL'
                 ]
             ], 
             body: tableData, 
@@ -157,25 +157,25 @@ async function gerarExcelSaldos() {
     }
     try {
         const wb = XLSX.utils.book_new();
-        // Mapeamento direto para colunas do Excel
+        // Mapeamento direto para colunas descritivas e claras do Excel
         const excelResumo = dadosSaldosParaExportacao.map(r => ({
             'Colaborador': r.colaborador, 
             'Cargo': r.cargo,
-            'Pagar - 50%': r.pag50,
-            'Pagar - 80%': r.pag80,
-            'Pagar - 100%': r.pag100,
-            'Pagar - Noturno': r.pagNot,
-            'Pagar - Atrasos': r.pagAtr,
-            'Descontar - 50%': r.exc50,
-            'Descontar - 80%': r.exc80,
-            'Descontar - 100%': r.exc100,
-            'Descontar - Noturno': r.excNot,
-            'Saldo 50%': r.saldo50,
-            'Saldo 80%': r.saldo80,
-            'Saldo 100%': r.saldo100,
-            'Saldo Noturno': r.saldoNot,
-            'Saldo Atrasos': r.saldoAtr,
-            'SALDO TOTAL': r.saldoTotal
+            'A Pagar (Devido) - 50%': r.pag50,
+            'A Pagar (Devido) - 80%': r.pag80,
+            'A Pagar (Devido) - 100%': r.pag100,
+            'A Pagar (Devido) - Noturno': r.pagNot,
+            'Reembolso - Atrasos': r.pagAtr,
+            'A Descontar (Pago a Mais) - 50%': r.exc50,
+            'A Descontar (Pago a Mais) - 80%': r.exc80,
+            'A Descontar (Pago a Mais) - 100%': r.exc100,
+            'A Descontar (Pago a Mais) - Noturno': r.excNot,
+            'Saldo Líquido - 50%': r.saldo50,
+            'Saldo Líquido - 80%': r.saldo80,
+            'Saldo Líquido - 100%': r.saldo100,
+            'Saldo Líquido - Noturno': r.saldoNot,
+            'Saldo Líquido - Atrasos': r.saldoAtr,
+            'SALDO TOTAL LÍQUIDO': r.saldoTotal
         }));
         
         const wsResumo = XLSX.utils.json_to_sheet(excelResumo);
