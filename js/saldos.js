@@ -30,24 +30,62 @@ async function carregarSaldos(todosLancamentos) {
     }
     
     resumo.forEach(item => {
+        // Totais gerais
         const aPagar = item.totalGeral.total;
         const aDescontar = item.totalExcedente.total;
+        const saldoTotal = aPagar - aDescontar;
         
-        let conclusaoHtml = "";
-        let conclusaoTexto = "";
+        // Calculando os saldos individuais de cada coluna (Devido - Excedente)
+        const s50 = item.totalGeral.h50 - item.totalExcedente.h50;
+        const s80 = item.totalGeral.h80 - item.totalExcedente.h80;
+        const s100 = item.totalGeral.h100 - item.totalExcedente.h100;
+        const sNot = item.totalGeral.noturno - item.totalExcedente.noturno;
+        const sAtr = item.totalGeral.atrasos; // Atrasos indevidos são apenas a pagar (reembolso)
         
-        if (aPagar > aDescontar) {
-            const saldo = aPagar - aDescontar;
-            conclusaoHtml = `<span style="color: #10b981; font-weight: bold;"><i class="fas fa-arrow-up"></i> Recebe ${formatarHora(saldo)}</span>`;
-            conclusaoTexto = `Recebe ${formatarHora(saldo)}`;
-        } else if (aDescontar > aPagar) {
-            const saldo = aDescontar - aPagar;
-            conclusaoHtml = `<span style="color: #ef4444; font-weight: bold;"><i class="fas fa-arrow-down"></i> Descontar ${formatarHora(saldo)}</span>`;
-            conclusaoTexto = `Descontar ${formatarHora(saldo)}`;
+        let detalhesHtml = "";
+        let detalhesTexto = [];
+
+        // Função auxiliar para construir a visualização dos saldos individuais
+        const addDetalhe = (label, saldo) => {
+            if (saldo > 0) {
+                detalhesHtml += `<div style="font-size: 0.85rem; color: #10b981;"><b>${label}:</b> +${formatarHora(saldo)}</div>`;
+                detalhesTexto.push(`${label}: +${formatarHora(saldo)}`);
+            } else if (saldo < 0) {
+                detalhesHtml += `<div style="font-size: 0.85rem; color: #ef4444;"><b>${label}:</b> -${formatarHora(Math.abs(saldo))}</div>`;
+                detalhesTexto.push(`${label}: -${formatarHora(Math.abs(saldo))}`);
+            }
+        };
+
+        addDetalhe("50%", s50);
+        addDetalhe("80%", s80);
+        addDetalhe("100%", s100);
+        addDetalhe("Noturno", sNot);
+        addDetalhe("Atrasos", sAtr);
+
+        // Define a linha de Conclusão Final do Totais
+        let totalHtml = "";
+        let strTotal = "";
+        
+        if (saldoTotal > 0) {
+            totalHtml = `<div style="font-weight: bold; color: #10b981; margin-top: 5px; border-top: 1px dashed var(--border); padding-top: 5px;"><i class="fas fa-arrow-up"></i> Recebe: ${formatarHora(saldoTotal)}</div>`;
+            strTotal = `Recebe: ${formatarHora(saldoTotal)}`;
+        } else if (saldoTotal < 0) {
+            totalHtml = `<div style="font-weight: bold; color: #ef4444; margin-top: 5px; border-top: 1px dashed var(--border); padding-top: 5px;"><i class="fas fa-arrow-down"></i> Desconta: ${formatarHora(Math.abs(saldoTotal))}</div>`;
+            strTotal = `Desconta: ${formatarHora(Math.abs(saldoTotal))}`;
         } else {
-            conclusaoHtml = `<span style="color: var(--text-secondary); font-weight: bold;"><i class="fas fa-equals"></i> Zerado</span>`;
-            conclusaoTexto = "Zerado";
+            totalHtml = `<div style="font-weight: bold; color: var(--text-secondary); margin-top: 5px; border-top: 1px dashed var(--border); padding-top: 5px;"><i class="fas fa-equals"></i> Zerado</div>`;
+            strTotal = "Zerado";
         }
+
+        // Caso a pessoa esteja com tudo zerado nas colunas
+        if (detalhesHtml === "") {
+            detalhesHtml = `<div style="font-size: 0.85rem; color: var(--text-secondary);">Sem diferenças</div>`;
+            detalhesTexto.push("Sem diferenças");
+        }
+
+        // Consolida o HTML e o Texto de Exportação final
+        const htmlFinal = `<div style="display: flex; flex-direction: column; gap: 2px; min-width: 140px;">${detalhesHtml}${totalHtml}</div>`;
+        const textoFinalExportacao = detalhesTexto.join("\n") + "\n---\nTotal: " + strTotal;
 
         dadosSaldosParaExportacao.push({
             colaborador: item.colaborador.nome,
@@ -61,7 +99,7 @@ async function carregarSaldos(todosLancamentos) {
             exc80: formatarHora(item.totalExcedente.h80),
             exc100: formatarHora(item.totalExcedente.h100),
             excNot: formatarHora(item.totalExcedente.noturno),
-            saldo: conclusaoTexto
+            saldo: textoFinalExportacao
         });
 
         corpo.innerHTML += `<tr>
@@ -76,7 +114,7 @@ async function carregarSaldos(todosLancamentos) {
             <td style="color: #ef4444;">${formatarHora(item.totalExcedente.h80)}</td>
             <td style="color: #ef4444;">${formatarHora(item.totalExcedente.h100)}</td>
             <td style="color: #ef4444;">${formatarHora(item.totalExcedente.noturno)}</td>
-            <td>${conclusaoHtml}</td>
+            <td style="vertical-align: middle;">${htmlFinal}</td>
         </tr>`;
     });
 }
