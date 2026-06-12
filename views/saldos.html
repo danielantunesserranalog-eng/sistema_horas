@@ -45,27 +45,33 @@
                             <button id="btnExportExcel" class="btn-primary" style="background: #10b981; border-radius: 8px;"><i class="fas fa-file-excel"></i> Exportar Excel</button>
                         </div>
                     </div>
-                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Visualização analítica por tipo de hora devida (a pagar) e hora paga em excesso (a descontar) com o cálculo de acerto final.</p>
+                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Visualização analítica totalmente separada por colunas (Pagar, Descontar e Saldo Líquido).</p>
                     <div class="table-wrapper">
                         <table>
                             <thead>
                                 <tr>
                                     <th rowspan="2" style="vertical-align: middle;">Colaborador</th>
                                     <th rowspan="2" style="vertical-align: middle;">Cargo</th>
-                                    <th colspan="5" style="text-align: center; background: #10b981; color: white;">Horas a Pagar (Devido)</th>
-                                    <th colspan="4" style="text-align: center; background: #ef4444; color: white;">Horas a Descontar (Excedente)</th>
-                                    <th rowspan="2" style="vertical-align: middle;">Conclusão / Saldo Final</th>
+                                    <th colspan="5" style="text-align: center; background: #10b981; color: white;">A Pagar (Devido)</th>
+                                    <th colspan="4" style="text-align: center; background: #ef4444; color: white;">A Descontar (Excedente)</th>
+                                    <th colspan="6" style="text-align: center; background: #6366f1; color: white;">Saldos Líquidos (Recebe / Desconta)</th>
                                 </tr>
                                 <tr>
-                                    <th style="background: #059669; color: white;">50%</th>
-                                    <th style="background: #059669; color: white;">80%</th>
-                                    <th style="background: #059669; color: white;">100%</th>
-                                    <th style="background: #059669; color: white;">Not.</th>
-                                    <th style="background: #059669; color: white;">Atrasos</th>
-                                    <th style="background: #dc2626; color: white;">50%</th>
-                                    <th style="background: #dc2626; color: white;">80%</th>
-                                    <th style="background: #dc2626; color: white;">100%</th>
-                                    <th style="background: #dc2626; color: white;">Not.</th>
+                                    <th style="background: #059669; color: white; font-size: 0.85rem;">50%</th>
+                                    <th style="background: #059669; color: white; font-size: 0.85rem;">80%</th>
+                                    <th style="background: #059669; color: white; font-size: 0.85rem;">100%</th>
+                                    <th style="background: #059669; color: white; font-size: 0.85rem;">Not.</th>
+                                    <th style="background: #059669; color: white; font-size: 0.85rem;">Atr.</th>
+                                    <th style="background: #dc2626; color: white; font-size: 0.85rem;">50%</th>
+                                    <th style="background: #dc2626; color: white; font-size: 0.85rem;">80%</th>
+                                    <th style="background: #dc2626; color: white; font-size: 0.85rem;">100%</th>
+                                    <th style="background: #dc2626; color: white; font-size: 0.85rem;">Not.</th>
+                                    <th style="background: #4f46e5; color: white; font-size: 0.85rem;">S. 50%</th>
+                                    <th style="background: #4f46e5; color: white; font-size: 0.85rem;">S. 80%</th>
+                                    <th style="background: #4f46e5; color: white; font-size: 0.85rem;">S. 100%</th>
+                                    <th style="background: #4f46e5; color: white; font-size: 0.85rem;">S. Not.</th>
+                                    <th style="background: #4f46e5; color: white; font-size: 0.85rem;">S. Atr.</th>
+                                    <th style="background: #3730a3; color: white; font-size: 0.85rem;">TOTAL</th>
                                 </tr>
                             </thead>
                             <tbody id="saldos-corpo"></tbody>
